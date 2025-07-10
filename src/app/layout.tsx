@@ -8,8 +8,8 @@ import { Header } from "@/components/header";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Dashboard App",
-  description: "A modern dashboard with navigation and theme toggle",
+  title: "MoneyTrail",
+  description: "Know where your money goes",
 };
 
 export default function RootLayout({
