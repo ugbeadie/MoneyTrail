@@ -3,12 +3,13 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Header } from "@/components/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MoneyTrail",
-  description: "Know where your money goes",
+  title: "Dashboard App",
+  description: "A modern dashboard with navigation and theme toggle",
 };
 
 export default function RootLayout({
@@ -25,7 +26,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Header />
+          <main>{children}</main>
         </ThemeProvider>
       </body>
     </html>
