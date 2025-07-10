@@ -1,0 +1,22 @@
+export const INCOME_CATEGORIES = [
+  "Salary",
+  "Freelance",
+  "Business",
+  "Investment",
+  "Gift",
+  "Other Income",
+] as const;
+
+export const EXPENSE_CATEGORIES = [
+  "Food & Dining",
+  "Transportation",
+  "Shopping",
+  "Entertainment",
+  "Bills & Utilities",
+  "Healthcare",
+  "Education",
+  "Travel",
+  "Other Expense",
+] as const;
+
+export const TRANSACTION_FORM_ID = "transaction-form";
