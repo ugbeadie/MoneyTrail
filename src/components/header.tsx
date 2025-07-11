@@ -27,12 +27,12 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState("/");
+  //   const [activeTab, setActiveTab] = useState("/");
 
   // Sync activeTab with pathname
-  useEffect(() => {
-    setActiveTab(pathname);
-  }, [pathname]);
+  //   useEffect(() => {
+  //     setActiveTab(pathname);
+  //   }, [pathname]);
 
   return (
     <>
