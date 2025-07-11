@@ -45,12 +45,12 @@ export function SummaryStats({ summary, isLoading }: SummaryStatsProps) {
             className="flex-1 flex flex-col text-center space-y-1"
           >
             <div
-              className={`text-sm font-medium ${item.color} flex justify-center align-center`}
+              className={`text-sm font-medium ${item.color} flex justify-center items-center`}
             >
               {item.label}
-              <span className="ml-2 mt-[3px]">{item.icon}</span>
+              <span className="ml-2">{item.icon}</span>
             </div>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-xl font-bold text-foreground">
               {isLoading ? (
                 <Spinner />
               ) : (
@@ -70,8 +70,10 @@ export function SummaryStats({ summary, isLoading }: SummaryStatsProps) {
       <div className="md:hidden space-y-4">
         {items.map((item) => (
           <div key={item.label} className="flex flex-col">
-            <div className={`text-sm font-medium mb-2 ${item.color} flex`}>
-              {item.label} <span className="ml-2 mt-[3px]">{item.icon}</span>
+            <div
+              className={`text-sm font-medium mb-2 ${item.color} flex items-center`}
+            >
+              {item.label} <span className="ml-2 ">{item.icon}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">
               {isLoading ? (

@@ -1,86 +1,67 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { getTransactions } from "@/lib/actions";
-import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
-import type { Transaction } from "@/types/transaction";
-import { TransactionImage } from "./transaction-image";
+import { cn } from "@/lib/utils"; // Optional utility if using class merging
 
-interface TransactionListProps {
-  className?: string;
-}
+const transactions = [
+  {
+    date: "Today",
+    items: [
+      { name: "Netflix", category: "Streaming", icon: "🍿", amount: -17.99 },
+    ],
+  },
+  {
+    date: "Yesterday",
+    items: [
+      { name: "Car payment", category: "Car", icon: "🚗", amount: -200 },
+      { name: "Food", category: "Groceries", icon: "🛒", amount: -50 },
+      { name: "Salary", category: "Salary", icon: "💼", amount: 5000 },
+    ],
+  },
+];
 
-interface TransactionItemProps {
-  transaction: Transaction;
-}
-
-function TransactionItem({ transaction }: TransactionItemProps) {
-  const isIncome = transaction.type === "income";
-  const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
-  const iconColor = isIncome ? "text-green-500" : "text-red-500";
-  const amountColor = isIncome ? "text-green-600" : "text-red-600";
-  const amountPrefix = isIncome ? "+" : "-";
-
+export default function TransactionList() {
   return (
-    <div className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex items-start gap-3 flex-1">
-        <Icon className={`w-5 h-5 ${iconColor} mt-1 flex-shrink-0`} />
-        <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{transaction.category}</div>
-          {transaction.description && (
-            <div className="text-sm text-muted-foreground line-clamp-2">
-              {transaction.description}
-            </div>
-          )}
-          <div className="text-xs text-muted-foreground">
-            {new Date(transaction.date).toLocaleDateString()}
-          </div>
-          {transaction.imageUrl && (
-            <div className="mt-2">
-              <TransactionImage imageUrl={transaction.imageUrl} />
-            </div>
-          )}
+    <div className="w-full md:max-w-xl md:mx-auto px-6 py-6">
+      <h2 className="text-2xl font-semibold mb-1">Transactions</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        You had 2 incomes and 23 expenses this month
+      </p>
+
+      {transactions.map(({ date, items }) => (
+        <div key={date} className="mb-6">
+          <h3 className="text-md font-medium text-muted-foreground mb-3">
+            {date}
+          </h3>
+
+          <ul className="divide-y divide-border border rounded-md overflow-hidden">
+            {items.map((item, idx) => (
+              <li
+                key={idx}
+                className="flex items-center justify-between px-4 py-3 bg-background"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="text-xl">{item.icon}</div>
+                  <div className="flex flex-row justify-center items-center">
+                    <span className="font-medium text-sm">{item.name}</span>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-1">
+                      {item.category}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={cn(
+                    "text-sm font-medium",
+                    item.amount >= 0 ? "text-green-600" : "text-red-600"
+                  )}
+                >
+                  {item.amount >= 0 ? "+" : "-"}₦
+                  {Math.abs(item.amount).toLocaleString()}
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-      <div className="text-right ml-4 flex-shrink-0">
-        <div className={`font-semibold ${amountColor}`}>
-          {amountPrefix}${transaction.amount.toFixed(2)}
-        </div>
-        <Badge variant="secondary" className="text-xs mt-1">
-          {transaction.type}
-        </Badge>
-      </div>
+      ))}
+
+      <button className="text-sm text-primary underline mt-4">Load More</button>
     </div>
-  );
-}
-
-export default async function TransactionList({
-  className,
-}: TransactionListProps) {
-  const transactions = await getTransactions();
-
-  if (transactions.length === 0) {
-    return (
-      <Card className={className}>
-        <CardContent className="p-6 text-center text-muted-foreground">
-          <div className="space-y-2">
-            <p>No transactions yet.</p>
-            <p className="text-sm">Add your first transaction above!</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {transactions.map((transaction) => (
-          <TransactionItem key={transaction.id} transaction={transaction} />
-        ))}
-      </CardContent>
-    </Card>
   );
 }

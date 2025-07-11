@@ -40,7 +40,7 @@ export function AmountDashboard() {
   return (
     <div className="w-full">
       {/* Desktop: Single row with 5 columns - even spacing */}
-      <div className="hidden md:flex justify-between items-center py-4 w-full px-6">
+      <div className="hidden md:flex justify-between items-center border-b py-4 w-full max-w-[80%] mx-auto ">
         {/*Summary */}
         <div className="flex-1 flex flex-col">
           <h1 className="text-2xl font-semibold text-foreground">Summary</h1>
@@ -58,7 +58,7 @@ export function AmountDashboard() {
       </div>
 
       {/* Mobile: Stacked layout */}
-      <div className="md:hidden py-4 space-y-6 px-6">
+      <div className="md:hidden py-4 space-y-6 px-6 border-b">
         {/* Top row: Summary and Month Picker */}
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-semibold text-foreground">Summary</h1>
@@ -78,7 +78,7 @@ export function AmountDashboard() {
       </div>
 
       {/* Bottom border */}
-      <div className="border-b border-border" />
+      {/* <div className="border-b border-border" /> */}
     </div>
   );
 }
