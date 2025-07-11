@@ -19,4 +19,19 @@ export const EXPENSE_CATEGORIES = [
   "Other Expense",
 ] as const;
 
+export const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 export const TRANSACTION_FORM_ID = "transaction-form";
