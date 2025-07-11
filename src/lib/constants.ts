@@ -1,6 +1,5 @@
 export const INCOME_CATEGORIES = [
   "Salary",
-  "Freelance",
   "Business",
   "Investment",
   "Gift",

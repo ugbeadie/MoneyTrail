@@ -13,7 +13,7 @@ interface TransactionItemProps {
   transaction: Transaction;
 }
 
-function TransactionItem({ transaction }: TransactionItemProps) {
+function TransactionnItem({ transaction }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
   const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
   const iconColor = isIncome ? "text-green-500" : "text-red-500";
@@ -78,7 +78,7 @@ export default async function TransactionList({
       </CardHeader>
       <CardContent className="space-y-3">
         {transactions.map((transaction) => (
-          <TransactionItem key={transaction.id} transaction={transaction} />
+          <TransactionnItem key={transaction.id} transaction={transaction} />
         ))}
       </CardContent>
     </Card>
