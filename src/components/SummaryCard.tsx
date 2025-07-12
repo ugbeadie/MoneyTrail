@@ -19,7 +19,7 @@ function SummaryCard({ title, value, icon, colorClass }: SummaryCardProps) {
       </CardHeader>
       <CardContent>
         <div className={`text-2xl font-bold ${colorClass}`}>
-          ${Math.abs(value).toFixed(2)}
+          ₦{Math.abs(value).toFixed(2)}
         </div>
       </CardContent>
     </Card>

@@ -28,11 +28,11 @@ function TransactionItem({ transaction }: TransactionItemProps) {
           )}
         </div>
 
-        <div className="flex">
+        <div className="md:flex">
           {transaction.description && (
             <div className="font-medium text-sm">{transaction.description}</div>
           )}
-          <div className=" text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-0.5 ml-2">
+          <div className=" text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-0.5 md:ml-2">
             {transaction.category}
           </div>
         </div>
@@ -80,7 +80,7 @@ export default async function TransactionList() {
   if (transactions.length === 0) {
     return (
       <div>
-        <h2 className="text-xl font-semibold mb-2">Transactions</h2>
+        <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
         <p className="text-muted-foreground text-sm mb-6">
           No transactions yet. Add your first transaction!
         </p>
@@ -112,9 +112,10 @@ export default async function TransactionList() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">Transactions</h2>
+      <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
       <p className="text-muted-foreground text-sm mb-6">
-        You had {totalIncomes} incomes and {totalExpenses} expenses this month
+        You have {totalIncomes} {totalIncomes > 1 ? "incomes" : "income"} and{" "}
+        {totalExpenses} {totalExpenses > 1 ? "expenses" : "expense"} this month
       </p>
 
       <div>
