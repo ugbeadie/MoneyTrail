@@ -1,68 +1,75 @@
-import { cn } from "@/lib/utils"; // Optional utility if using class merging
 import { getTransactions } from "@/lib/actions";
-import { ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import { TransactionImage } from "./transaction-image";
 
-interface TransactionListProps {
-  className?: string;
-}
+// interface TransactionListProps {
+//   className?: string;
+// }
 
 interface TransactionItemProps {
   transaction: Transaction;
 }
-// const transactions = [
-//   {
-//     date: "Today",
-//     items: [
-//       { name: "Netflix", category: "Streaming", icon: "🍿", amount: -17.99 },
-//     ],
-//   },
-//   {
-//     date: "Yesterday",
-//     items: [
-//       { name: "Car payment", category: "Car", icon: "🚗", amount: -200 },
-//       { name: "Food", category: "Groceries", icon: "🛒", amount: -50 },
-//       { name: "Salary", category: "Salary", icon: "💼", amount: 5000 },
-//     ],
-//   },
-// ];
 
 function TransactionItem({ transaction }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
-  const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
-  const iconColor = isIncome ? "text-green-500" : "text-red-500";
-  const amountColor = isIncome ? "text-green-600" : "text-red-600";
-  const amountPrefix = isIncome ? "+" : "-";
-  return (
-    <div key={transaction.id} className="mb-6">
-      <h3 className="text-md font-medium text-muted-foreground mb-3">
-        {new Date(transaction.createdAt).toLocaleDateString()}
-      </h3>
 
-      <ul className="divide-y divide-border border rounded-md overflow-hidden">
-        <li
-          key={transaction.id}
-          className="flex items-center justify-between px-4 py-3 bg-background"
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div className="flex items-center gap-3">
+        <div
+          className={`w-6 h-6 rounded-full flex items-center justify-center ${
+            isIncome ? "bg-green-100" : "bg-red-100"
+          }`}
         >
-          <div className="flex items-center space-x-3">
-            <div className="text-xl">
-              <Icon className={`w-5 h-5 ${iconColor} mt-1 flex-shrink-0`} />
-            </div>
-            <div className="flex flex-row justify-center items-center">
-              <span className="font-medium text-sm">
-                {transaction.description}
-              </span>
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-1 ml-2">
-                {transaction.category}
-              </span>
-            </div>
+          {isIncome ? (
+            <Plus className="w-3 h-3 text-green-600" />
+          ) : (
+            <Minus className="w-3 h-3 text-red-600" />
+          )}
+        </div>
+
+        <div className="flex">
+          {transaction.description && (
+            <div className="font-medium text-sm">{transaction.description}</div>
+          )}
+          <div className=" text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-0.5 ml-2">
+            {transaction.category}
           </div>
-          <div className={`font-medium text-sm ${amountColor}`}>
-            {amountPrefix}₦{transaction.amount.toFixed(2)}
-          </div>
-        </li>
-      </ul>
+        </div>
+      </div>
+
+      <div
+        className={`font-semibold text-sm ${
+          isIncome ? "text-green-600" : "text-red-600"
+        }`}
+      >
+        {isIncome ? "+" : "-"}₦{transaction.amount.toFixed(2)}
+      </div>
+    </div>
+  );
+}
+
+function TransactionGroup({
+  date,
+  transactions,
+}: {
+  date: string;
+  transactions: Transaction[];
+}) {
+  return (
+    <div className="mb-6">
+      <div className="text-sm font-medium text-muted-foreground mb-3">
+        {new Date(date).toLocaleDateString("en-US", {
+          month: "numeric",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </div>
+      <div className="space-y-1">
+        {transactions.map((transaction) => (
+          <TransactionItem key={transaction.id} transaction={transaction} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -70,18 +77,55 @@ function TransactionItem({ transaction }: TransactionItemProps) {
 export default async function TransactionList() {
   const transactions = await getTransactions();
 
+  if (transactions.length === 0) {
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Transactions</h2>
+        <p className="text-muted-foreground text-sm mb-6">
+          No transactions yet. Add your first transaction!
+        </p>
+      </div>
+    );
+  }
+
+  // Group transactions by date
+  const groupedTransactions = transactions.reduce(
+    (groups: { [key: string]: Transaction[] }, transaction) => {
+      const date = transaction.date.toISOString().split("T")[0];
+      // Get just the date part
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(transaction);
+      return groups;
+    },
+    {}
+  );
+
+  // Sort dates in descending order
+  const sortedDates = Object.keys(groupedTransactions).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
+  );
+
+  const totalIncomes = transactions.filter((t) => t.type === "income").length;
+  const totalExpenses = transactions.filter((t) => t.type === "expense").length;
+
   return (
-    <div className="w-full md:max-w-xl md:mx-auto px-6 py-6">
-      <h2 className="text-2xl font-semibold mb-1">Transactions</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        You had 2 incomes and 23 expenses this month
+    <div>
+      <h2 className="text-xl font-semibold mb-2">Transactions</h2>
+      <p className="text-muted-foreground text-sm mb-6">
+        You had {totalIncomes} incomes and {totalExpenses} expenses this month
       </p>
 
-      {transactions.map((transaction) => (
-        <TransactionItem key={transaction.id} transaction={transaction} />
-      ))}
-
-      <button className="text-sm text-primary underline mt-4">Load More</button>
+      <div>
+        {sortedDates.map((date) => (
+          <TransactionGroup
+            key={date}
+            date={date}
+            transactions={groupedTransactions[date]}
+          />
+        ))}
+      </div>
     </div>
   );
 }

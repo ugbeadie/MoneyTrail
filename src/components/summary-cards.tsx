@@ -3,10 +3,6 @@ import { getTransactionSummary } from "@/lib/actions";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import type { TransactionSummary } from "@/types/transaction";
 
-interface SummaryCardsProps {
-  className?: string;
-}
-
 interface SummaryCardProps {
   title: string;
   value: number;
@@ -30,11 +26,11 @@ function SummaryCard({ title, value, icon, colorClass }: SummaryCardProps) {
   );
 }
 
-export default async function SummaryCards({ className }: SummaryCardsProps) {
+export default async function SummaryCards() {
   const summary: TransactionSummary = await getTransactionSummary();
 
   return (
-    <div className={`grid gap-4 md:grid-cols-3 ${className || ""}`}>
+    <div className="grid gap-4 md:grid-cols-3">
       <SummaryCard
         title="Total Income"
         value={summary.totalIncome}

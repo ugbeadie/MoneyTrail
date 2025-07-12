@@ -37,7 +37,7 @@ export function Header() {
   return (
     <>
       {/* Desktop Navigation - Top */}
-      <nav className="hidden md:flex items-center justify-between w-full border-b max-w-[80%] mx-auto py-3 bg-background">
+      <nav className="hidden md:flex items-center justify-between max-w-6xl mx-auto px-6 py-3 bg-background">
         {/* Logo */}
         <div className="flex items-center">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
