@@ -80,7 +80,7 @@ export function Header() {
         </div>
       </nav>
       {/* Mobile Top Bar - Logo and Theme Toggle */}
-      <nav className="md:hidden flex items-center justify-between px-6 py-3 border-b bg-background">
+      <nav className="md:hidden flex items-center justify-between px-6 py-3 bg-background">
         {/* Logo */}
         <div className="flex items-center">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">

@@ -1,4 +1,4 @@
-import TransactionForm from "@/components/transaction-form";
+import TransactionForm from "@/components/TransactionForm";
 import TransactionList from "@/components/TransactionList";
 import SummaryCards from "@/components/SummaryCard";
 import { Spinner } from "@/components/ui/spinner";

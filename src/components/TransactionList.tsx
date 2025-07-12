@@ -2,14 +2,13 @@ import { getTransactions } from "@/lib/actions";
 import { Plus, Minus } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
 
-// interface TransactionListProps {
-//   className?: string;
-// }
-
 interface TransactionItemProps {
   transaction: Transaction;
 }
-
+interface TransactionGroupProps {
+  date: string;
+  transactions: Transaction[];
+}
 function TransactionItem({ transaction }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
 
@@ -49,13 +48,7 @@ function TransactionItem({ transaction }: TransactionItemProps) {
   );
 }
 
-function TransactionGroup({
-  date,
-  transactions,
-}: {
-  date: string;
-  transactions: Transaction[];
-}) {
+function TransactionGroup({ date, transactions }: TransactionGroupProps) {
   return (
     <div className="mb-6">
       <div className="text-sm font-medium text-muted-foreground mb-3">
@@ -101,6 +94,14 @@ export default async function TransactionList() {
     },
     {}
   );
+
+  // Sort each group from newest to oldest based on when they were added
+  Object.keys(groupedTransactions).forEach((date) => {
+    groupedTransactions[date].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  });
 
   // Sort dates in descending order
   const sortedDates = Object.keys(groupedTransactions).sort(

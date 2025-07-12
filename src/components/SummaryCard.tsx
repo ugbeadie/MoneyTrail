@@ -30,7 +30,7 @@ export default async function SummaryCards() {
   const summary: TransactionSummary = await getTransactionSummary();
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-3 mt-4">
       <SummaryCard
         title="Total Income"
         value={summary.totalIncome}

@@ -10,7 +10,7 @@ export function MonthPickerTab() {
   });
   return (
     <div className="flex justify-between items-center">
-      <p className="font-bold text-xl">Summary</p>
+      <p className="font-bold text-2xl">Summary</p>
       <MonthPicker selectedMonth={selectedMonth} onSelect={setSelectedMonth} />
     </div>
   );
