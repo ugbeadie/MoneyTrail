@@ -32,6 +32,12 @@ export default async function SummaryCards() {
   return (
     <div className="grid gap-4 md:grid-cols-3 mt-4">
       <SummaryCard
+        title="Balance"
+        value={summary.balance}
+        icon={<Wallet className="h-4 w-4 text-blue" />}
+        colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
+      />
+      <SummaryCard
         title="Total Income"
         value={summary.totalIncome}
         icon={<TrendingUp className="h-4 w-4 text-green-600" />}
@@ -42,12 +48,6 @@ export default async function SummaryCards() {
         value={summary.totalExpenses}
         icon={<TrendingDown className="h-4 w-4 text-red-600" />}
         colorClass="text-red-600"
-      />
-      <SummaryCard
-        title="Balance"
-        value={summary.balance}
-        icon={<Wallet className="h-4 w-4 text-blue-600" />}
-        colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
       />
     </div>
   );

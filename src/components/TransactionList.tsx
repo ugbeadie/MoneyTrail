@@ -13,7 +13,7 @@ function TransactionItem({ transaction }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
 
   return (
-    <div className="flex items-center justify-between py-3">
+    <div className="flex items-center justify-between py-3 border-b border-muted">
       <div className="flex items-center gap-3">
         <div
           className={`w-6 h-6 rounded-full flex items-center justify-center ${
@@ -36,6 +36,7 @@ function TransactionItem({ transaction }: TransactionItemProps) {
           </div>
         </div>
       </div>
+      <div className="border-b"></div>
 
       <div
         className={`font-semibold text-sm ${
@@ -134,8 +135,15 @@ export default async function TransactionList() {
     <div>
       <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
       <p className="text-muted-foreground text-sm mb-6">
-        You have {totalIncomes} {totalIncomes > 1 ? "incomes" : "income"} and{" "}
-        {totalExpenses} {totalExpenses > 1 ? "expenses" : "expense"} this month
+        You have{" "}
+        <span className="font-semibold">
+          {totalIncomes} {totalIncomes > 1 ? "incomes" : "income"}
+        </span>{" "}
+        and{" "}
+        <span className="font-semibold">
+          {totalExpenses} {totalExpenses > 1 ? "expenses" : "expense"}
+        </span>{" "}
+        this month
       </p>
 
       <div>

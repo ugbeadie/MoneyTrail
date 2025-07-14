@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,15 +18,12 @@ import { PlusCircle, MinusCircle } from "lucide-react";
 import type { TransactionType } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 
-interface TransactionFormProps {
-  className?: string;
-}
-
-export default function TransactionForm({ className }: TransactionFormProps) {
+export default function TransactionForm() {
   const [transactionType, setTransactionType] =
     useState<TransactionType>("expense");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null); // 👈 create ref
 
   const handleSubmit = useCallback(
     async (formData: FormData): Promise<void> => {
@@ -38,10 +35,7 @@ export default function TransactionForm({ className }: TransactionFormProps) {
         const result = await addTransaction(formData);
 
         if (result.success) {
-          const form = document.getElementById(
-            "transaction-form"
-          ) as HTMLFormElement;
-          form?.reset();
+          formRef.current?.reset();
           setError(null);
         } else {
           setError(result.error || "Failed to add transaction");
@@ -59,12 +53,12 @@ export default function TransactionForm({ className }: TransactionFormProps) {
     transactionType === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
   return (
-    <Card className={className}>
+    <Card>
       <CardHeader>
         <CardTitle className="text-xl font-semibold">Add Transaction</CardTitle>
       </CardHeader>
       <CardContent>
-        <form id="transaction-form" action={handleSubmit} className="space-y-4">
+        <form ref={formRef} action={handleSubmit} className="space-y-4">
           {/* Transaction Type Selection */}
           <div className="flex gap-2">
             <Button
