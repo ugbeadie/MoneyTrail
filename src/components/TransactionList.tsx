@@ -36,7 +36,7 @@ function TransactionItem({ transaction }: TransactionItemProps) {
           </div>
         </div>
       </div>
-      <div className="border-b"></div>
+      {/* <div className="border-b"></div> */}
 
       <div
         className={`font-semibold text-sm ${
@@ -50,34 +50,49 @@ function TransactionItem({ transaction }: TransactionItemProps) {
 }
 
 function TransactionGroup({ date, transactions }: TransactionGroupProps) {
+  const totalIncome = transactions
+    .filter((t) => t.type === "income") // filter only incomes
+    .reduce((sum, t) => sum + t.amount, 0); // sum their amounts
+
+  const totalExpense = transactions
+    .filter((t) => t.type === "expense") // filter only expenses
+    .reduce((sum, t) => sum + t.amount, 0);
+
   return (
     <div className="mb-6">
-      <div className="text-sm font-medium text-muted-foreground mb-3">
-        {(() => {
-          const d = new Date(date);
-          const day = d.getDate().toString().padStart(2, "0");
-          const month = (d.getMonth() + 1).toString().padStart(2, "0");
-          const year = d.getFullYear();
-          const weekday = d.toLocaleDateString("en-US", { weekday: "short" }); // e.g. "Sun"
+      <div className="flex text-muted-foreground justify-between items-center border-2 border-muted rounded-md px-4 py-2">
+        <div className="text-sm font-medium">
+          {(() => {
+            const d = new Date(date);
+            const day = d.getDate().toString().padStart(2, "0");
+            const month = (d.getMonth() + 1).toString().padStart(2, "0");
+            const year = d.getFullYear();
+            const weekday = d.toLocaleDateString("en-US", { weekday: "short" }); // e.g. "Sun"
 
-          return (
-            <>
-              {`${day}/${month}/${year} `}
-              <span
-                className={`font-semibold ${
-                  weekday === "Sun"
-                    ? "text-red-600"
-                    : weekday === "Sat"
-                    ? "text-blue-600"
-                    : "text-muted-foreground"
-                }`}
-              >
-                ({weekday})
-              </span>
-            </>
-          );
-        })()}
+            return (
+              <>
+                {`${day}/${month}/${year} `}
+                <span
+                  className={`font-semibold ${
+                    weekday === "Sun"
+                      ? "text-red-600"
+                      : weekday === "Sat"
+                      ? "text-blue-600"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  ({weekday})
+                </span>
+              </>
+            );
+          })()}
+        </div>
+        <div className="text-xs font-semibold space-x-3">
+          <span className="text-green-600">+₦{totalIncome.toFixed(2)}</span>
+          <span className="text-red-600">-₦{totalExpense.toFixed(2)}</span>
+        </div>
       </div>
+
       <div className="space-y-1">
         {transactions.map((transaction) => (
           <TransactionItem key={transaction.id} transaction={transaction} />
