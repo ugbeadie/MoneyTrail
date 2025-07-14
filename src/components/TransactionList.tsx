@@ -52,11 +52,30 @@ function TransactionGroup({ date, transactions }: TransactionGroupProps) {
   return (
     <div className="mb-6">
       <div className="text-sm font-medium text-muted-foreground mb-3">
-        {new Date(date).toLocaleDateString("en-US", {
-          month: "numeric",
-          day: "numeric",
-          year: "numeric",
-        })}
+        {(() => {
+          const d = new Date(date);
+          const day = d.getDate().toString().padStart(2, "0");
+          const month = (d.getMonth() + 1).toString().padStart(2, "0");
+          const year = d.getFullYear();
+          const weekday = d.toLocaleDateString("en-US", { weekday: "short" }); // e.g. "Sun"
+
+          return (
+            <>
+              {`${day}/${month}/${year} `}
+              <span
+                className={`font-semibold ${
+                  weekday === "Sun"
+                    ? "text-red-600"
+                    : weekday === "Sat"
+                    ? "text-blue-600"
+                    : "text-muted-foreground"
+                }`}
+              >
+                ({weekday})
+              </span>
+            </>
+          );
+        })()}
       </div>
       <div className="space-y-1">
         {transactions.map((transaction) => (
