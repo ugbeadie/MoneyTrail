@@ -16,11 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { addTransaction } from "@/lib/actions";
 import { PlusCircle, MinusCircle } from "lucide-react";
 import type { TransactionType } from "@/types/transaction";
-import {
-  INCOME_CATEGORIES,
-  EXPENSE_CATEGORIES,
-  TRANSACTION_FORM_ID,
-} from "@/lib/constants";
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 
 interface TransactionFormProps {
   className?: string;
@@ -43,7 +39,7 @@ export default function TransactionForm({ className }: TransactionFormProps) {
 
         if (result.success) {
           const form = document.getElementById(
-            TRANSACTION_FORM_ID
+            "transaction-form"
           ) as HTMLFormElement;
           form?.reset();
           setError(null);
@@ -65,14 +61,10 @@ export default function TransactionForm({ className }: TransactionFormProps) {
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Add Transaction</CardTitle>
+        <CardTitle className="text-xl font-semibold">Add Transaction</CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          id={TRANSACTION_FORM_ID}
-          action={handleSubmit}
-          className="space-y-4"
-        >
+        <form id="transaction-form" action={handleSubmit} className="space-y-4">
           {/* Transaction Type Selection */}
           <div className="flex gap-2">
             <Button

@@ -14,6 +14,7 @@ interface MonthPickerProps {
   selectedMonth: string;
   onSelect: (month: string) => void;
 }
+
 export function MonthPicker({ selectedMonth, onSelect }: MonthPickerProps) {
   return (
     <DropdownMenu>
