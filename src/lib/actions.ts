@@ -8,7 +8,6 @@ import type {
   AddTransactionResult,
   TransactionType,
 } from "@/types/transaction";
-// import { isValidTransactionType } from "@/types/transaction";
 
 export async function addTransaction(
   formData: FormData
@@ -24,10 +23,6 @@ export async function addTransaction(
     if (!type || !amountStr || !category || !dateStr) {
       return { success: false, error: "Missing required fields" };
     }
-
-    // if (!isValidTransactionType(type)) {
-    //   return { success: false, error: "Invalid transaction type" };
-    // }
 
     const amount = Number.parseFloat(amountStr);
     if (isNaN(amount) || amount <= 0) {
@@ -54,6 +49,66 @@ export async function addTransaction(
     return { success: true };
   } catch (error) {
     return { success: false, error: "Failed to add transaction" };
+  }
+}
+
+export async function updateTransaction(
+  formData: FormData
+): Promise<AddTransactionResult> {
+  try {
+    const id = formData.get("id") as string;
+    const type = formData.get("type") as string;
+    const amountStr = formData.get("amount") as string;
+    const category = formData.get("category") as string;
+    const description = formData.get("description") as string;
+    const imageUrl = formData.get("imageUrl") as string;
+    const dateStr = formData.get("date") as string;
+
+    if (!id || !type || !amountStr || !category || !dateStr) {
+      return { success: false, error: "Missing required fields" };
+    }
+
+    const amount = Number.parseFloat(amountStr);
+    if (isNaN(amount) || amount <= 0) {
+      return { success: false, error: "Invalid amount" };
+    }
+
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return { success: false, error: "Invalid date" };
+    }
+
+    await prisma.transaction.update({
+      where: { id },
+      data: {
+        type,
+        amount,
+        category,
+        description: description || null,
+        imageUrl: imageUrl || null,
+        date,
+      },
+    });
+
+    revalidatePath("/", "page");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update transaction" };
+  }
+}
+
+export async function deleteTransaction(
+  id: string
+): Promise<AddTransactionResult> {
+  try {
+    await prisma.transaction.delete({
+      where: { id },
+    });
+
+    revalidatePath("/", "page");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to delete transaction" };
   }
 }
 

@@ -1,9 +1,8 @@
-import TransactionForm from "@/components/TransactionForm";
-import TransactionList from "@/components/TransactionList";
 import SummaryCards from "@/components/SummaryCard";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
 import { MonthPickerTab } from "@/components/MonthPickerTab";
+import TransactionManager from "@/components/TransactionManager";
 
 export default function HomePage() {
   return (
@@ -16,20 +15,8 @@ export default function HomePage() {
             <SummaryCards />
           </Suspense>
 
-          {/* Main Content Grid */}
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* Transaction List */}
-            <div className="lg:order-1">
-              <Suspense fallback={<Spinner />}>
-                <TransactionList />
-              </Suspense>
-            </div>
-
-            {/* Transaction Form */}
-            <div className="lg:order-2">
-              <TransactionForm />
-            </div>
-          </div>
+          {/* Transaction Manager - handles both form and list */}
+          <TransactionManager />
         </div>
       </main>
     </div>
