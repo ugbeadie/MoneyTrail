@@ -21,7 +21,7 @@ export function MonthPicker({ selectedMonth, onSelect }: MonthPickerProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center gap-1 text-foreground hover:bg-transparent p-0"
+          className="flex items-center gap-1 text-foreground hover:bg-transparent p-0 cursor-pointer"
         >
           {selectedMonth}
           <ChevronDown className="h-4 w-4" />
