@@ -1,12 +1,12 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Transaction } from "@/types/transaction";
 import { getTransactions, deleteTransaction } from "@/lib/actions";
+import { Spinner } from "./ui/spinner";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -73,17 +73,15 @@ function TransactionItem({
       </div>
 
       <div className="flex items-center justify-end gap-1 md:-mr-3">
-        {/* Amount - shifts slightly on hover to make room for delete button */}
         <div
-          className={`font-semibold  text-sm transition-transform duration-200 ${
+          className={`font-semibold text-sm transition-transform duration-200 ${
             isIncome ? "text-green-600" : "text-red-600"
           } group-hover:-translate-x-2`}
         >
           {isIncome ? "+" : "-"}₦{transaction.amount.toFixed(2)}
         </div>
 
-        {/* Delete button - hidden on desktop until hover, always visible on mobile */}
-        <div className="md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+        <div className="md:opacity-0 md:group-hover:opacity-100 md:mr-2 transition-opacity duration-200">
           <Button
             size="sm"
             variant="ghost"
@@ -195,16 +193,22 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
   };
 
   if (loading) {
-    return <div>Loading transactions...</div>;
+    return (
+      <div className="flex items-center justify-center py-8 h-[600px]">
+        <Spinner />
+      </div>
+    );
   }
 
-  if (transactions.length === 0) {
+  if (transactions.length === 0 && !loading) {
     return (
-      <div>
+      <div className="h-[600px] flex flex-col">
         <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
-        <p className="text-muted-foreground text-sm mb-6">
-          No transactions yet. Add your first transaction!
-        </p>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground text-sm text-center">
+            No transactions yet. Add your first transaction!
+          </p>
+        </div>
       </div>
     );
   }
@@ -239,29 +243,36 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
   const totalExpenses = transactions.filter((t) => t.type === "expense").length;
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
-      <p className="text-muted-foreground text-sm mb-6">
-        You have{" "}
-        <span className="font-semibold">
-          {totalIncomes} {totalIncomes > 1 ? "incomes" : "income"}
-        </span>{" "}
-        and{" "}
-        <span className="font-semibold">
-          {totalExpenses} {totalExpenses > 1 ? "expenses" : "expense"}
-        </span>{" "}
-        this month
-      </p>
-      <div>
-        {sortedDates.map((date) => (
-          <TransactionGroup
-            key={date}
-            date={date}
-            transactions={groupedTransactions[date]}
-            onEdit={onEdit}
-            onDelete={handleDelete}
-          />
-        ))}
+    <div className="h-[600px] flex flex-col">
+      {/* Fixed header section */}
+      <div className="flex-shrink-0">
+        <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
+        <p className="text-muted-foreground text-sm mb-6">
+          You have{" "}
+          <span className="font-semibold">
+            {totalIncomes} {totalIncomes > 1 ? "incomes" : "income"}
+          </span>{" "}
+          and{" "}
+          <span className="font-semibold">
+            {totalExpenses} {totalExpenses > 1 ? "expenses" : "expense"}
+          </span>{" "}
+          this month
+        </p>
+      </div>
+
+      {/* Scrollable content area with hidden scrollbar */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="space-y-0">
+          {sortedDates.map((date) => (
+            <TransactionGroup
+              key={date}
+              date={date}
+              transactions={groupedTransactions[date]}
+              onEdit={onEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

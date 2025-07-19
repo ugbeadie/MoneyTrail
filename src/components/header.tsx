@@ -61,7 +61,7 @@ export function Header() {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-2 px-3 py-2 text-sm font-medium cursor-pointer transition-colors",
                     isActive
                       ? "text-foreground bg-muted font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -75,7 +75,7 @@ export function Header() {
           })}
         </div>
         {/* Theme Toggle */}
-        <div className="flex items-center">
+        <div className="flex items-center cursor-pointer">
           <ThemeToggle />
         </div>
       </nav>

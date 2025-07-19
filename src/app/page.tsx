@@ -7,7 +7,7 @@ import TransactionManager from "@/components/TransactionManager";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
-      <main className="max-w-6xl mx-auto p-6 pt-0">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-0">
         <MonthPickerTab />
         <div className="space-y-8">
           {/* Summary Section */}
@@ -16,7 +16,9 @@ export default function HomePage() {
           </Suspense>
 
           {/* Transaction Manager - handles both form and list */}
-          <TransactionManager />
+          <div className="w-full">
+            <TransactionManager />
+          </div>
         </div>
       </main>
     </div>
