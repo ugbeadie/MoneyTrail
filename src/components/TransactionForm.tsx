@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,17 +13,55 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { addTransaction } from "@/lib/actions";
-import { PlusCircle, MinusCircle } from "lucide-react";
-import type { TransactionType } from "@/types/transaction";
+import { addTransaction, updateTransaction } from "@/lib/actions";
+import { PlusCircle, MinusCircle, X } from "lucide-react";
+import type { TransactionType, Transaction } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 
-export default function TransactionForm() {
+interface TransactionFormProps {
+  editingTransaction?: Transaction | null;
+  onTransactionSaved?: () => void;
+  onCancelEdit?: () => void;
+}
+
+export default function TransactionForm({
+  editingTransaction,
+  onTransactionSaved,
+  onCancelEdit,
+}: TransactionFormProps) {
   const [transactionType, setTransactionType] =
     useState<TransactionType>("expense");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement | null>(null); // 👈 create ref
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  const isEditing = !!editingTransaction;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingTransaction) {
+      setTransactionType(editingTransaction.type);
+
+      // Populate form fields
+      if (formRef.current) {
+        const form = formRef.current;
+        (form.elements.namedItem("amount") as HTMLInputElement).value =
+          editingTransaction.amount.toString();
+        (form.elements.namedItem("description") as HTMLTextAreaElement).value =
+          editingTransaction.description || "";
+        (form.elements.namedItem("imageUrl") as HTMLInputElement).value =
+          editingTransaction.imageUrl || "";
+        (form.elements.namedItem("date") as HTMLInputElement).value =
+          editingTransaction.date.toISOString().split("T")[0];
+
+        // Set category value - we'll handle this with a key prop on the Select
+      }
+    } else {
+      // Reset form when not editing
+      setTransactionType("expense");
+      formRef.current?.reset();
+    }
+  }, [editingTransaction]);
 
   const handleSubmit = useCallback(
     async (formData: FormData): Promise<void> => {
@@ -32,13 +70,26 @@ export default function TransactionForm() {
 
       try {
         formData.set("type", transactionType);
-        const result = await addTransaction(formData);
+
+        let result;
+        if (isEditing && editingTransaction) {
+          formData.set("id", editingTransaction.id);
+          result = await updateTransaction(formData);
+        } else {
+          result = await addTransaction(formData);
+        }
 
         if (result.success) {
-          formRef.current?.reset();
+          if (!isEditing) {
+            formRef.current?.reset();
+          }
           setError(null);
+          onTransactionSaved?.();
         } else {
-          setError(result.error || "Failed to add transaction");
+          setError(
+            result.error ||
+              `Failed to ${isEditing ? "update" : "add"} transaction`
+          );
         }
       } catch (error) {
         setError("An unexpected error occurred");
@@ -46,8 +97,14 @@ export default function TransactionForm() {
         setIsSubmitting(false);
       }
     },
-    [transactionType]
+    [transactionType, isEditing, editingTransaction, onTransactionSaved]
   );
+
+  const handleCancel = () => {
+    formRef.current?.reset();
+    setError(null);
+    onCancelEdit?.();
+  };
 
   const categories =
     transactionType === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -55,7 +112,21 @@ export default function TransactionForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl font-semibold">Add Transaction</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-semibold">
+            {isEditing ? "Edit Transaction" : "Add Transaction"}
+          </CardTitle>
+          {isEditing && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <form ref={formRef} action={handleSubmit} className="space-y-4">
@@ -98,7 +169,12 @@ export default function TransactionForm() {
           {/* Category */}
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
-            <Select name="category" required>
+            <Select
+              name="category"
+              required
+              key={`${transactionType}-${editingTransaction?.id || "new"}`}
+              defaultValue={editingTransaction?.category}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -157,9 +233,27 @@ export default function TransactionForm() {
           )}
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Transaction"}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting
+                ? isEditing
+                  ? "Updating..."
+                  : "Saving..."
+                : isEditing
+                ? "Update Transaction"
+                : "Save Transaction"}
+            </Button>
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </CardContent>
     </Card>
