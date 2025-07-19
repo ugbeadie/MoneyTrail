@@ -1,7 +1,9 @@
 "use client";
 
+import type React from "react";
+
 import { useState, useEffect } from "react";
-import { Plus, Minus, Edit2, Trash2 } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Transaction } from "@/types/transaction";
 import { getTransactions, deleteTransaction } from "@/lib/actions";
@@ -30,18 +32,23 @@ function TransactionItem({
 }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the edit click
     if (window.confirm("Are you sure you want to delete this transaction?")) {
       onDelete(transaction.id);
     }
   };
 
+  const handleItemClick = () => {
+    onEdit(transaction);
+  };
+
   return (
-    <div className="flex items-center justify-between py-3 border-b border-muted group">
-      <div
-        className="flex items-center gap-3 flex-1 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-1 rounded"
-        onClick={() => onEdit(transaction)}
-      >
+    <div
+      className="flex items-center py-3 border-b border-muted group cursor-pointer -mx-2 px-2 rounded transition-colors duration-200"
+      onClick={handleItemClick}
+    >
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
           className={`w-6 h-6 rounded-full flex items-center justify-center ${
             isIncome ? "bg-green-100" : "bg-red-100"
@@ -53,9 +60,11 @@ function TransactionItem({
             <Minus className="w-3 h-3 text-red-600" />
           )}
         </div>
-        <div className="md:flex">
+        <div className="md:flex min-w-0 flex-1">
           {transaction.description && (
-            <div className="font-medium text-sm">{transaction.description}</div>
+            <div className="font-medium text-sm truncate">
+              {transaction.description}
+            </div>
           )}
           <div className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-0.5 md:ml-2">
             {transaction.category}
@@ -63,28 +72,22 @@ function TransactionItem({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-1 md:-mr-3">
+        {/* Amount - shifts slightly on hover to make room for delete button */}
         <div
-          className={`font-semibold text-sm ${
+          className={`font-semibold  text-sm transition-transform duration-200 ${
             isIncome ? "text-green-600" : "text-red-600"
-          }`}
+          } group-hover:-translate-x-2`}
         >
           {isIncome ? "+" : "-"}₦{transaction.amount.toFixed(2)}
         </div>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Delete button - hidden on desktop until hover, always visible on mobile */}
+        <div className="md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 w-6 p-0"
-            onClick={() => onEdit(transaction)}
-          >
-            <Edit2 className="w-3 h-3" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 relative z-10"
             onClick={handleDelete}
           >
             <Trash2 className="w-3 h-3" />
@@ -110,8 +113,8 @@ function TransactionGroup({
 
   return (
     <div className="mb-6">
-      <div className="flex text-muted-foreground justify-between items-center border-2 border-muted rounded-md px-4 py-2">
-        <div className="text-sm font-medium">
+      <div className="flex items-center border-2 border-muted rounded-md px-4 py-2">
+        <div className="text-sm font-medium text-muted-foreground flex-1">
           {(() => {
             const d = new Date(date);
             const day = d.getDate().toString().padStart(2, "0");
@@ -136,9 +139,13 @@ function TransactionGroup({
             );
           })()}
         </div>
-        <div className="text-xs font-semibold space-x-3">
-          <span className="text-green-600">+₦{totalIncome.toFixed(2)}</span>
-          <span className="text-red-600">-₦{totalExpense.toFixed(2)}</span>
+
+        {/* Right side with same width as transaction items to align amounts */}
+        <div className="flex justify-end">
+          <div className="text-xs font-semibold space-x-3">
+            <span className="text-green-600">+₦{totalIncome.toFixed(2)}</span>
+            <span className="text-red-600">-₦{totalExpense.toFixed(2)}</span>
+          </div>
         </div>
       </div>
       <div className="space-y-1">
