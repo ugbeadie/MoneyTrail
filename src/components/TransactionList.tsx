@@ -186,7 +186,12 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     try {
       const result = await deleteTransaction(id);
       if (result.success) {
-        toast.success("Transaction deleted");
+        toast.error("Transaction deleted!", {
+          duration: 3000,
+          icon: <Trash2 className="text-red-600" size={18} />,
+
+          description: "The transaction has been removed successfully.",
+        });
         await fetchTransactions();
       } else {
         toast.error(result.error || "Failed to delete transaction");

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { addTransaction, updateTransaction } from "@/lib/actions";
-import { PlusCircle, MinusCircle, X } from "lucide-react";
+import { PlusCircle, MinusCircle, X, FilePenLine } from "lucide-react";
 import type { TransactionType, Transaction } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -82,10 +82,18 @@ export default function TransactionForm({
 
         if (result.success) {
           if (isEditing) {
-            toast.success("Transaction updated!");
+            toast.success("Transaction updated!", {
+              duration: 3000,
+              icon: <FilePenLine className="text-green-600" size={18} />,
+              description: "Your changes have been saved successfully.",
+            });
           } else {
             formRef.current?.reset();
-            toast.success("Transaction added!");
+            toast.success("Transaction added!", {
+              duration: 3000,
+              icon: <PlusCircle className="text-green-600" size={18} />,
+              description: "A new transaction has been recorded.",
+            });
           }
           setError(null);
           onTransactionSaved?.();
@@ -94,7 +102,11 @@ export default function TransactionForm({
             result.error ||
               `Failed to ${isEditing ? "update" : "add"} transaction`
           );
-          toast.error(`Failed to ${isEditing ? "update" : "add"} transaction`);
+          toast.error(`Failed to ${isEditing ? "update" : "add"} transaction`, {
+            duration: 4000,
+            icon: <X className="text-red-600" size={18} />,
+            description: "Something went wrong. Please try again.",
+          });
         }
       } catch (error) {
         setError("An unexpected error occurred");

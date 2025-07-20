@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Header } from "@/components/header";
 import { Lato } from "next/font/google";
-import { Toaster } from "sonner";
+// import { Toaster } from "sonner";
+import ToasterProvider from "@/components/ToasterProvider";
 
 const lato = Lato({
   weight: "400",
@@ -32,7 +33,7 @@ export default function RootLayout({
           <Header />
           <main>
             {children}
-            <Toaster />
+            <ToasterProvider />
           </main>
         </ThemeProvider>
       </body>
