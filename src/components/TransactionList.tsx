@@ -45,7 +45,7 @@ function TransactionItem({
 
   return (
     <div
-      className="flex items-center py-3 border-b border-muted group cursor-pointer -mx-2 px-2 rounded transition-colors duration-200"
+      className="flex items-center py-3 group cursor-pointer -mx-2 px-2 rounded transition-colors duration-200"
       onClick={handleItemClick}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -146,12 +146,16 @@ function TransactionGroup({
       </div>
       <div className="space-y-1">
         {transactions.map((transaction) => (
-          <TransactionItem
+          <div
             key={transaction.id}
-            transaction={transaction}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+            className="[&:not(:last-child)]:border-b [&:not(:last-child)]:border-muted"
+          >
+            <TransactionItem
+              transaction={transaction}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          </div>
         ))}
       </div>
     </div>
