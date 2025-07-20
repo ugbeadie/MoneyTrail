@@ -17,6 +17,7 @@ import { addTransaction, updateTransaction } from "@/lib/actions";
 import { PlusCircle, MinusCircle, X } from "lucide-react";
 import type { TransactionType, Transaction } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
+import { toast } from "sonner";
 
 interface TransactionFormProps {
   editingTransaction?: Transaction | null;
@@ -80,8 +81,11 @@ export default function TransactionForm({
         }
 
         if (result.success) {
-          if (!isEditing) {
+          if (isEditing) {
+            toast.success("Transaction updated!");
+          } else {
             formRef.current?.reset();
+            toast.success("Transaction added!");
           }
           setError(null);
           onTransactionSaved?.();
@@ -90,9 +94,11 @@ export default function TransactionForm({
             result.error ||
               `Failed to ${isEditing ? "update" : "add"} transaction`
           );
+          toast.error(`Failed to ${isEditing ? "update" : "add"} transaction`);
         }
       } catch (error) {
         setError("An unexpected error occurred");
+        toast.error("An unexpected error occurred");
       } finally {
         setIsSubmitting(false);
       }

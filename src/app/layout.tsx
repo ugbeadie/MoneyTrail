@@ -1,10 +1,10 @@
 import type React from "react";
 import type { Metadata } from "next";
-// import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Header } from "@/components/header";
 import { Lato } from "next/font/google";
+import { Toaster } from "sonner";
 
 const lato = Lato({
   weight: "400",
@@ -30,7 +30,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <main>{children}</main>
+          <main>
+            {children}
+            <Toaster />
+          </main>
         </ThemeProvider>
       </body>
     </html>

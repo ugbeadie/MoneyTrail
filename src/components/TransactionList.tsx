@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { Transaction } from "@/types/transaction";
 import { getTransactions, deleteTransaction } from "@/lib/actions";
 import { Spinner } from "./ui/spinner";
+import { toast } from "sonner";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -185,12 +186,13 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     try {
       const result = await deleteTransaction(id);
       if (result.success) {
+        toast.success("Transaction deleted");
         await fetchTransactions();
       } else {
-        alert(result.error || "Failed to delete transaction");
+        toast.error(result.error || "Failed to delete transaction");
       }
     } catch (error) {
-      alert("An error occurred while deleting the transaction");
+      toast.error("An error occurred while deleting the transaction");
     }
   };
 
