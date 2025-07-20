@@ -33,7 +33,7 @@ function TransactionItem({
   const isIncome = transaction.type === "income";
 
   const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering the edit click
+    e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this transaction?")) {
       onDelete(transaction.id);
     }
@@ -85,7 +85,7 @@ function TransactionItem({
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 relative z-10"
+            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 relative z-10 cursor-pointer"
             onClick={handleDelete}
           >
             <Trash2 className="w-3 h-3" />
@@ -137,8 +137,6 @@ function TransactionGroup({
             );
           })()}
         </div>
-
-        {/* Right side with same width as transaction items to align amounts */}
         <div className="flex justify-end">
           <div className="text-xs font-semibold space-x-3">
             <span className="text-green-600">+₦{totalIncome.toFixed(2)}</span>
@@ -183,7 +181,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     try {
       const result = await deleteTransaction(id);
       if (result.success) {
-        await fetchTransactions(); // Refresh the list
+        await fetchTransactions();
       } else {
         alert(result.error || "Failed to delete transaction");
       }
@@ -200,7 +198,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     );
   }
 
-  if (transactions.length === 0 && !loading) {
+  if (transactions.length === 0) {
     return (
       <div className="h-[600px] flex flex-col">
         <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
@@ -213,7 +211,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     );
   }
 
-  // Group transactions by date
   const groupedTransactions = transactions.reduce(
     (groups: { [key: string]: Transaction[] }, transaction) => {
       const date = transaction.date.toISOString().split("T")[0];
@@ -226,7 +223,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     {}
   );
 
-  // Sort each group from newest to oldest based on when they were added
   Object.keys(groupedTransactions).forEach((date) => {
     groupedTransactions[date].sort(
       (a, b) =>
@@ -234,7 +230,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
     );
   });
 
-  // Sort dates in descending order
   const sortedDates = Object.keys(groupedTransactions).sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
@@ -244,7 +239,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
 
   return (
     <div className="h-[600px] flex flex-col">
-      {/* Fixed header section */}
       <div className="flex-shrink-0">
         <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
         <p className="text-muted-foreground text-sm mb-6">
@@ -260,7 +254,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
         </p>
       </div>
 
-      {/* Scrollable content area with hidden scrollbar */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="space-y-0">
           {sortedDates.map((date) => (

@@ -135,7 +135,7 @@ export default function TransactionForm({
             <Button
               type="button"
               variant={transactionType === "income" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => setTransactionType("income")}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
@@ -144,7 +144,7 @@ export default function TransactionForm({
             <Button
               type="button"
               variant={transactionType === "expense" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => setTransactionType("expense")}
             >
               <MinusCircle className="w-4 h-4 mr-2" />
@@ -175,12 +175,16 @@ export default function TransactionForm({
               key={`${transactionType}-${editingTransaction?.id || "new"}`}
               defaultValue={editingTransaction?.category}
             >
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
+                  <SelectItem
+                    key={category}
+                    value={category}
+                    className="cursor-pointer"
+                  >
                     {category}
                   </SelectItem>
                 ))}
@@ -196,6 +200,7 @@ export default function TransactionForm({
               name="date"
               type="date"
               defaultValue={new Date().toISOString().split("T")[0]}
+              className="cursor-pointer"
               required
             />
           </div>
