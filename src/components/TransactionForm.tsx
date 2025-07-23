@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import type React from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,102 +32,142 @@ export default function TransactionForm({
   onTransactionSaved,
   onCancelEdit,
 }: TransactionFormProps) {
-  const [transactionType, setTransactionType] =
-    useState<TransactionType>("expense");
+  const [type, setType] = useState<TransactionType>("expense");
+  const [category, setCategory] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement | null>(null);
+  const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
 
+  const formRef = useRef<HTMLFormElement>(null);
   const isEditing = !!editingTransaction;
 
-  // Populate form when editing
-  useEffect(() => {
-    if (editingTransaction) {
-      setTransactionType(editingTransaction.type);
+  // Get categories based on current type
+  const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
-      // Populate form fields
-      if (formRef.current) {
-        const form = formRef.current;
-        (form.elements.namedItem("amount") as HTMLInputElement).value =
-          editingTransaction.amount.toString();
-        (form.elements.namedItem("description") as HTMLTextAreaElement).value =
-          editingTransaction.description || "";
-        (form.elements.namedItem("imageUrl") as HTMLInputElement).value =
-          editingTransaction.imageUrl || "";
-        (form.elements.namedItem("date") as HTMLInputElement).value =
-          editingTransaction.date.toISOString().split("T")[0];
-
-        // Set category value - we'll handle this with a key prop on the Select
-      }
-    } else {
-      // Reset form when not editing
-      setTransactionType("expense");
-      formRef.current?.reset();
-    }
-  }, [editingTransaction]);
-
-  const handleSubmit = useCallback(
-    async (formData: FormData): Promise<void> => {
-      setIsSubmitting(true);
-      setError(null);
-
-      try {
-        formData.set("type", transactionType);
-
-        let result;
-        if (isEditing && editingTransaction) {
-          formData.set("id", editingTransaction.id);
-          result = await updateTransaction(formData);
-        } else {
-          result = await addTransaction(formData);
-        }
-
-        if (result.success) {
-          if (isEditing) {
-            toast.success("Transaction updated!", {
-              duration: 3000,
-              icon: <FilePenLine className="text-green-600" size={18} />,
-              description: "Your changes have been saved successfully.",
-            });
-          } else {
-            formRef.current?.reset();
-            toast.success("Transaction added!", {
-              duration: 3000,
-              icon: <PlusCircle className="text-green-600" size={18} />,
-              description: "A new transaction has been recorded.",
-            });
-          }
-          setError(null);
-          onTransactionSaved?.();
-        } else {
-          setError(
-            result.error ||
-              `Failed to ${isEditing ? "update" : "add"} transaction`
-          );
-          toast.error(`Failed to ${isEditing ? "update" : "add"} transaction`, {
-            duration: 4000,
-            icon: <X className="text-red-600" size={18} />,
-            description: "Something went wrong. Please try again.",
-          });
-        }
-      } catch (error) {
-        setError("An unexpected error occurred");
-        toast.error("An unexpected error occurred");
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [transactionType, isEditing, editingTransaction, onTransactionSaved]
-  );
-
-  const handleCancel = () => {
-    formRef.current?.reset();
-    setError(null);
-    onCancelEdit?.();
+  // Helper functions
+  const populateFormFields = (transaction: Transaction) => {
+    const form = formRef.current;
+    if (!form) return;
+    (form.amount as HTMLInputElement).value = transaction.amount.toString();
+    (form.description as HTMLTextAreaElement).value =
+      transaction.description || "";
+    (form.imageUrl as HTMLInputElement).value = transaction.imageUrl || "";
+    (form.date as HTMLInputElement).value = transaction.date
+      .toISOString()
+      .split("T")[0];
   };
 
-  const categories =
-    transactionType === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const resetFormState = () => {
+    setType("expense");
+    setCategory("");
+    setShowTypeChangeWarning(false);
+    setError(null);
+    formRef.current?.reset();
+  };
+
+  const showSuccessToast = (isEdit: boolean) => {
+    const config = isEdit
+      ? {
+          message: "Transaction updated!",
+          icon: <FilePenLine className="text-green-600" size={18} />,
+          description: "Your changes have been saved successfully.",
+        }
+      : {
+          message: "Transaction added!",
+          icon: <PlusCircle className="text-green-600" size={18} />,
+          description: "A new transaction has been recorded.",
+        };
+
+    toast.success(config.message, {
+      duration: 3000,
+      icon: config.icon,
+      description: config.description,
+    });
+  };
+
+  // Handle editing transaction - set type first
+  useEffect(() => {
+    if (!editingTransaction) {
+      resetFormState();
+      return;
+    }
+
+    setType(editingTransaction.type);
+    setShowTypeChangeWarning(false);
+    setError(null);
+    populateFormFields(editingTransaction);
+  }, [editingTransaction]);
+
+  // Set category after type is updated
+  useEffect(() => {
+    const shouldSetCategory =
+      editingTransaction && type === editingTransaction.type;
+    shouldSetCategory && setCategory(editingTransaction.category);
+  }, [editingTransaction, type]);
+
+  const handleTypeChange = (newType: TransactionType) => {
+    if (newType === type) return;
+
+    setType(newType);
+    setCategory("");
+    setError(null);
+    setShowTypeChangeWarning(isEditing && newType !== editingTransaction?.type);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+    setError(null);
+    setShowTypeChangeWarning(false);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!category) {
+      setError("Please select a category before saving.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    const formData = new FormData(event.currentTarget);
+    formData.set("type", type);
+    formData.set("category", category);
+
+    try {
+      // Add ID for editing
+      isEditing &&
+        editingTransaction &&
+        formData.set("id", editingTransaction.id);
+
+      const result =
+        isEditing && editingTransaction
+          ? await updateTransaction(formData)
+          : await addTransaction(formData);
+
+      if (!result.success) {
+        setError(
+          result.error ||
+            `Failed to ${isEditing ? "update" : "add"} transaction`
+        );
+        return;
+      }
+
+      showSuccessToast(isEditing);
+      !isEditing && resetFormState();
+      onTransactionSaved?.();
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    resetFormState();
+    onCancelEdit?.();
+  };
 
   return (
     <Card>
@@ -146,24 +188,25 @@ export default function TransactionForm({
           )}
         </div>
       </CardHeader>
+
       <CardContent>
-        <form ref={formRef} action={handleSubmit} className="space-y-4">
-          {/* Transaction Type Selection */}
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+          {/* Transaction Type */}
           <div className="flex gap-2">
             <Button
               type="button"
-              variant={transactionType === "income" ? "default" : "outline"}
-              className="flex-1 cursor-pointer"
-              onClick={() => setTransactionType("income")}
+              variant={type === "income" ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => handleTypeChange("income")}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
               Income
             </Button>
             <Button
               type="button"
-              variant={transactionType === "expense" ? "default" : "outline"}
-              className="flex-1 cursor-pointer"
-              onClick={() => setTransactionType("expense")}
+              variant={type === "expense" ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => handleTypeChange("expense")}
             >
               <MinusCircle className="w-4 h-4 mr-2" />
               Expense
@@ -190,24 +233,35 @@ export default function TransactionForm({
             <Select
               name="category"
               required
-              key={`${transactionType}-${editingTransaction?.id || "new"}`}
-              defaultValue={editingTransaction?.category}
+              value={category}
+              onValueChange={handleCategoryChange}
             >
-              <SelectTrigger className="cursor-pointer">
+              <SelectTrigger
+                className={!category ? "text-muted-foreground" : ""}
+              >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem
-                    key={category}
-                    value={category}
-                    className="cursor-pointer"
-                  >
-                    {category}
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
+            {/* Type change warning */}
+            {showTypeChangeWarning && !category && (
+              <div className="text-sm text-amber-700 bg-amber-50 dark:bg-amber-950 dark:text-amber-300 p-3 rounded-md border border-amber-200 dark:border-amber-800">
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-600 dark:text-amber-400">⚠️</span>
+                  <span>
+                    Transaction type changed to <strong>{type}</strong>. Please
+                    select a new category.
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Date */}
@@ -218,7 +272,6 @@ export default function TransactionForm({
               name="date"
               type="date"
               defaultValue={new Date().toISOString().split("T")[0]}
-              className="cursor-pointer"
               required
             />
           </div>
@@ -250,8 +303,11 @@ export default function TransactionForm({
 
           {/* Error Message */}
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 dark:bg-red-950 p-3 rounded-md">
-              {error}
+            <div className="text-sm text-red-700 bg-red-50 dark:bg-red-950 dark:text-red-300 p-3 rounded-md border border-red-200 dark:border-red-800">
+              <div className="flex items-center gap-2">
+                <span className="text-red-600 dark:text-red-400">❌</span>
+                <span>{error}</span>
+              </div>
             </div>
           )}
 
@@ -259,12 +315,8 @@ export default function TransactionForm({
           <div className="flex gap-2">
             <Button type="submit" className="flex-1" disabled={isSubmitting}>
               {isSubmitting
-                ? isEditing
-                  ? "Updating..."
-                  : "Saving..."
-                : isEditing
-                ? "Update Transaction"
-                : "Save Transaction"}
+                ? `${isEditing ? "Updating" : "Saving"}...`
+                : `${isEditing ? "Update" : "Save"} Transaction`}
             </Button>
             {isEditing && (
               <Button
