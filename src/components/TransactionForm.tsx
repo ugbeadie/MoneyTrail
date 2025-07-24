@@ -313,7 +313,11 @@ export default function TransactionForm({
 
           {/* Submit Button */}
           <div className="flex gap-2">
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="flex-1 cursor-pointer"
+              disabled={isSubmitting}
+            >
               {isSubmitting
                 ? `${isEditing ? "Updating" : "Saving"}...`
                 : `${isEditing ? "Update" : "Save"} Transaction`}
@@ -324,6 +328,7 @@ export default function TransactionForm({
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isSubmitting}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>

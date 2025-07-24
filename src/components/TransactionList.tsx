@@ -1,9 +1,18 @@
 "use client";
-
 import type React from "react";
 import { useState, useEffect } from "react";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Transaction } from "@/types/transaction";
 import { getTransactions, deleteTransaction } from "@/lib/actions";
 import { Spinner } from "./ui/spinner";
@@ -31,13 +40,17 @@ function TransactionItem({
   onEdit,
   onDelete,
 }: TransactionItemProps) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const isIncome = transaction.type === "income";
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this transaction?")) {
-      onDelete(transaction.id);
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(transaction.id);
+    setShowDeleteModal(false);
   };
 
   const handleItemClick = () => {
@@ -45,55 +58,106 @@ function TransactionItem({
   };
 
   return (
-    <div
-      className="flex items-center py-3 group cursor-pointer -mx-2 px-2 rounded transition-colors duration-200"
-      onClick={handleItemClick}
-    >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div
-          className={`w-6 h-6 rounded-full flex items-center justify-center ${
-            isIncome ? "bg-green-100" : "bg-red-100"
-          }`}
-        >
-          {isIncome ? (
-            <Plus className="w-3 h-3 text-green-600" />
-          ) : (
-            <Minus className="w-3 h-3 text-red-600" />
-          )}
-        </div>
-        <div className="md:flex min-w-0 flex-1">
-          {transaction.description && (
-            <div className="font-medium text-sm truncate">
-              {transaction.description}
+    <>
+      <div
+        className="flex items-center py-3 group cursor-pointer -mx-2 px-2 rounded transition-colors duration-200"
+        onClick={handleItemClick}
+      >
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center ${
+              isIncome ? "bg-green-100" : "bg-red-100"
+            }`}
+          >
+            {isIncome ? (
+              <Plus className="w-3 h-3 text-green-600" />
+            ) : (
+              <Minus className="w-3 h-3 text-red-600" />
+            )}
+          </div>
+          <div className="md:flex min-w-0 flex-1">
+            {transaction.description && (
+              <div className="font-medium text-sm truncate">
+                {transaction.description}
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-0.5 md:ml-2">
+              {transaction.category}
             </div>
-          )}
-          <div className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full w-fit mt-0.5 md:ml-2">
-            {transaction.category}
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-1 md:-mr-3">
+          <div
+            className={`font-semibold text-sm transition-transform duration-200 ${
+              isIncome ? "text-green-600" : "text-red-600"
+            } group-hover:-translate-x-2`}
+          >
+            {isIncome ? "+" : "-"}₦{transaction.amount.toFixed(2)}
+          </div>
+          <div className="md:opacity-0 md:group-hover:opacity-100 md:mr-2 transition-opacity duration-200">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 relative z-10 cursor-pointer"
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-1 md:-mr-3">
-        <div
-          className={`font-semibold text-sm transition-transform duration-200 ${
-            isIncome ? "text-green-600" : "text-red-600"
-          } group-hover:-translate-x-2`}
-        >
-          {isIncome ? "+" : "-"}₦{transaction.amount.toFixed(2)}
-        </div>
-
-        <div className="md:opacity-0 md:group-hover:opacity-100 md:mr-2 transition-opacity duration-200">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 relative z-10 cursor-pointer"
-            onClick={handleDelete}
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        </div>
-      </div>
-    </div>
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this transaction? This action
+              cannot be undone.
+              <div className="mt-3 p-3 bg-muted rounded-md text-center">
+                <div className="flex justify-center items-center gap-2 text-sm">
+                  <div
+                    className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                      isIncome ? "bg-green-100" : "bg-red-100"
+                    }`}
+                  >
+                    {isIncome ? (
+                      <Plus className="w-2 h-2 text-green-600" />
+                    ) : (
+                      <Minus className="w-2 h-2 text-red-600" />
+                    )}
+                  </div>
+                  <span className="font-medium">
+                    ₦{transaction.amount.toFixed(2)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    • {transaction.category}
+                  </span>
+                </div>
+                {transaction.description && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {transaction.description}
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -189,7 +253,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
         toast.error("Transaction deleted!", {
           duration: 3000,
           icon: <Trash2 className="text-red-600" size={18} />,
-
           description: "The transaction has been removed successfully.",
         });
         await fetchTransactions();
@@ -264,7 +327,6 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
           this month
         </p>
       </div>
-
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="space-y-0">
           {sortedDates.map((date) => (
