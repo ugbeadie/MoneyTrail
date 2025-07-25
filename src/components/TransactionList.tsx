@@ -1,4 +1,5 @@
 "use client";
+
 import type React from "react";
 import { useState, useEffect } from "react";
 import { Plus, Minus, Trash2 } from "lucide-react";
@@ -14,9 +15,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Transaction } from "@/types/transaction";
-import { getTransactions, deleteTransaction } from "@/lib/actions";
+import { getTransactionsByMonth, deleteTransaction } from "@/lib/actions";
 import { Spinner } from "./ui/spinner";
 import { toast } from "sonner";
+import { useMonth } from "@/contexts/MonthContext";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -33,6 +35,7 @@ interface TransactionGroupProps {
 
 interface TransactionListProps {
   onEdit: (transaction: Transaction) => void;
+  onRefresh: () => void;
 }
 
 function TransactionItem({
@@ -106,7 +109,6 @@ function TransactionItem({
           </div>
         </div>
       </div>
-
       {/* Delete Confirmation Modal */}
       <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <AlertDialogContent>
@@ -227,13 +229,22 @@ function TransactionGroup({
   );
 }
 
-export default function TransactionList({ onEdit }: TransactionListProps) {
+export default function TransactionList({
+  onEdit,
+  onRefresh,
+}: TransactionListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const { selectedMonthIndex, selectedMonth } = useMonth();
 
   const fetchTransactions = async () => {
     try {
-      const data = await getTransactions();
+      setLoading(true);
+      const currentYear = new Date().getFullYear();
+      const data = await getTransactionsByMonth(
+        selectedMonthIndex,
+        currentYear
+      );
       setTransactions(data);
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
@@ -244,7 +255,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [selectedMonthIndex]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -255,7 +266,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
           icon: <Trash2 className="text-red-600" size={18} />,
           description: "The transaction has been removed successfully.",
         });
-        await fetchTransactions();
+        onRefresh(); // Uses the same refresh function as form
       } else {
         toast.error(result.error || "Failed to delete transaction");
       }
@@ -278,7 +289,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
         <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground text-sm text-center">
-            No transactions yet. Add your first transaction!
+            No transactions for {selectedMonth}. Add your first transaction!
           </p>
         </div>
       </div>
@@ -324,7 +335,7 @@ export default function TransactionList({ onEdit }: TransactionListProps) {
           <span className="font-semibold">
             {totalExpenses} {totalExpenses > 1 ? "expenses" : "expense"}
           </span>{" "}
-          this month
+          in {selectedMonth}
         </p>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-hide">

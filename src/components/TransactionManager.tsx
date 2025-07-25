@@ -3,6 +3,7 @@
 import { useState } from "react";
 import TransactionForm from "./TransactionForm";
 import TransactionList from "./TransactionList";
+import SummaryCards from "./SummaryCard";
 import type { Transaction } from "@/types/transaction";
 
 export default function TransactionManager() {
@@ -14,9 +15,14 @@ export default function TransactionManager() {
     setEditingTransaction(transaction);
   };
 
+  // Single refresh function used by both components
+  const handleRefresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
   const handleTransactionSaved = () => {
-    setEditingTransaction(null);
-    setRefreshKey((prev) => prev + 1); // Force refresh of transaction list
+    setEditingTransaction(null); // Clear editing state (close form)
+    handleRefresh(); // Use the same refresh function
   };
 
   const handleCancelEdit = () => {
@@ -24,14 +30,23 @@ export default function TransactionManager() {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <TransactionList key={refreshKey} onEdit={handleEdit} />
+    <div className="space-y-8">
+      {/* Summary Cards - refreshes when refreshKey changes */}
+      <SummaryCards key={`summary-${refreshKey}`} />
 
-      <TransactionForm
-        editingTransaction={editingTransaction}
-        onTransactionSaved={handleTransactionSaved}
-        onCancelEdit={handleCancelEdit}
-      />
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Both components use the same handleRefresh function */}
+        <TransactionList
+          key={`list-${refreshKey}`}
+          onEdit={handleEdit}
+          onRefresh={handleRefresh}
+        />
+        <TransactionForm
+          editingTransaction={editingTransaction}
+          onTransactionSaved={handleTransactionSaved}
+          onCancelEdit={handleCancelEdit}
+        />
+      </div>
     </div>
   );
 }

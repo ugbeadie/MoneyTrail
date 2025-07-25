@@ -130,7 +130,7 @@ export function Header() {
       </nav>
 
       {/* Spacer for fixed headers */}
-      <div className="h-[60px]" />
+      <div className="h-[65px]" />
     </>
   );
 }

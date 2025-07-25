@@ -127,9 +127,71 @@ export async function getTransactions(): Promise<Transaction[]> {
   }
 }
 
+export async function getTransactionsByMonth(
+  month: number,
+  year: number
+): Promise<Transaction[]> {
+  try {
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    return transactions.map((transaction) => ({
+      ...transaction,
+      type: transaction.type as TransactionType,
+    }));
+  } catch (error) {
+    return [];
+  }
+}
+
 export async function getTransactionSummary(): Promise<TransactionSummary> {
   try {
     const transactions = await prisma.transaction.findMany();
+
+    const totalIncome = transactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpenses = transactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return {
+      totalIncome,
+      totalExpenses,
+      balance: totalIncome - totalExpenses,
+    };
+  } catch (error) {
+    return { totalIncome: 0, totalExpenses: 0, balance: 0 };
+  }
+}
+
+export async function getTransactionSummaryByMonth(
+  month: number,
+  year: number
+): Promise<TransactionSummary> {
+  try {
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
 
     const totalIncome = transactions
       .filter((t) => t.type === "income")

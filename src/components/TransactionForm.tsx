@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,12 +36,32 @@ export default function TransactionForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
-
   const formRef = useRef<HTMLFormElement>(null);
+
   const isEditing = !!editingTransaction;
 
   // Get categories based on current type
   const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+  // Handle editing transaction - set type first
+  useEffect(() => {
+    if (!editingTransaction) {
+      resetFormState();
+      return;
+    }
+
+    setType(editingTransaction.type);
+    setShowTypeChangeWarning(false);
+    setError(null);
+    populateFormFields(editingTransaction);
+  }, [editingTransaction]);
+
+  // Set category after type is updated
+  useEffect(() => {
+    const shouldSetCategory =
+      editingTransaction && type === editingTransaction.type;
+    shouldSetCategory && setCategory(editingTransaction.category);
+  }, [editingTransaction, type]);
 
   // Helper functions
   const populateFormFields = (transaction: Transaction) => {
@@ -85,26 +104,6 @@ export default function TransactionForm({
     });
   };
 
-  // Handle editing transaction - set type first
-  useEffect(() => {
-    if (!editingTransaction) {
-      resetFormState();
-      return;
-    }
-
-    setType(editingTransaction.type);
-    setShowTypeChangeWarning(false);
-    setError(null);
-    populateFormFields(editingTransaction);
-  }, [editingTransaction]);
-
-  // Set category after type is updated
-  useEffect(() => {
-    const shouldSetCategory =
-      editingTransaction && type === editingTransaction.type;
-    shouldSetCategory && setCategory(editingTransaction.category);
-  }, [editingTransaction, type]);
-
   const handleTypeChange = (newType: TransactionType) => {
     if (newType === type) return;
 
@@ -120,8 +119,8 @@ export default function TransactionForm({
     setShowTypeChangeWarning(false);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
     if (!category) {
       setError("Please select a category before saving.");
@@ -131,7 +130,7 @@ export default function TransactionForm({
     setIsSubmitting(true);
     setError(null);
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(e.currentTarget);
     formData.set("type", type);
     formData.set("category", category);
 
@@ -156,7 +155,7 @@ export default function TransactionForm({
 
       showSuccessToast(isEditing);
       !isEditing && resetFormState();
-      onTransactionSaved?.();
+      onTransactionSaved?.(); // This calls handleTransactionSaved which uses handleRefresh
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
@@ -188,7 +187,6 @@ export default function TransactionForm({
           )}
         </div>
       </CardHeader>
-
       <CardContent>
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
           {/* Transaction Type */}
@@ -237,19 +235,20 @@ export default function TransactionForm({
               onValueChange={handleCategoryChange}
             >
               <SelectTrigger
-                className={!category ? "text-muted-foreground" : ""}
+                className={`${
+                  !category ? "text-muted-foreground" : ""
+                } cursor-pointer`}
               >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
+                  <SelectItem key={cat} value={cat} className="cursor-pointer">
                     {cat}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
             {/* Type change warning */}
             {showTypeChangeWarning && !category && (
               <div className="text-sm text-amber-700 bg-amber-50 dark:bg-amber-950 dark:text-amber-300 p-3 rounded-md border border-amber-200 dark:border-amber-800">
@@ -328,7 +327,7 @@ export default function TransactionForm({
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                className="cursor-pointer"
+                className="cursor-pointer bg-transparent"
               >
                 Cancel
               </Button>
