@@ -34,18 +34,21 @@ export default function TransactionManager() {
       {/* Summary Cards - refreshes when refreshKey changes */}
       <SummaryCards key={`summary-${refreshKey}`} />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Both components use the same handleRefresh function */}
-        <TransactionList
-          key={`list-${refreshKey}`}
-          onEdit={handleEdit}
-          onRefresh={handleRefresh}
-        />
-        <TransactionForm
-          editingTransaction={editingTransaction}
-          onTransactionSaved={handleTransactionSaved}
-          onCancelEdit={handleCancelEdit}
-        />
+      <div className="flex flex-col md:flex-row md:gap-6">
+        <div className="md:w-3/5 md:border-r md:pr-12">
+          <TransactionList
+            key={`list-${refreshKey}`}
+            onEdit={handleEdit}
+            onRefresh={handleRefresh}
+          />
+        </div>
+        <div className="md:w-2/5 md:pl-6 mt-6 md:mt-0">
+          <TransactionForm
+            editingTransaction={editingTransaction}
+            onTransactionSaved={handleTransactionSaved}
+            onCancelEdit={handleCancelEdit}
+          />
+        </div>
       </div>
     </div>
   );
