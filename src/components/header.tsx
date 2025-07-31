@@ -1,10 +1,16 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, AreaChartIcon as ChartArea } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "./ui/theme-toggle";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Home,
+  Calendar,
+  AreaChartIcon as ChartArea,
+  Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./ui/theme-toggle";
 
 const navItems = [
   {
@@ -26,6 +32,14 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname();
+  const [loadingPath, setLoadingPath] = useState<string | null>(null);
+
+  // Reset loading when route changes
+  useEffect(() => {
+    if (loadingPath === pathname) {
+      setLoadingPath(null);
+    }
+  }, [pathname, loadingPath]);
 
   return (
     <>
@@ -50,14 +64,24 @@ export function Header() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
+              const isLoading = loadingPath === item.href;
               return (
                 <Link key={item.label} href={item.href} className="flex-1">
                   <Button
                     type="button"
                     variant={isActive ? "default" : "outline"}
                     className="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium transition-colors cursor-pointer"
+                    onClick={() => {
+                      if (pathname !== item.href) {
+                        setLoadingPath(item.href);
+                      }
+                    }}
                   >
-                    <Icon className="w-4 h-4" />
+                    {isLoading ? (
+                      <Loader2 className="animate-spin w-4 h-4" />
+                    ) : (
+                      <Icon className="w-4 h-4" />
+                    )}
                     {item.label}
                   </Button>
                 </Link>
@@ -101,6 +125,7 @@ export function Header() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+            const isLoading = loadingPath === item.href;
             return (
               <Link key={item.href} href={item.href}>
                 <Button
@@ -112,8 +137,17 @@ export function Header() {
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}
+                  onClick={() => {
+                    if (pathname !== item.href) {
+                      setLoadingPath(item.href);
+                    }
+                  }}
                 >
-                  <Icon className={cn("w-5 h-5", isActive && "text-primary")} />
+                  {isLoading ? (
+                    <Loader2 className="animate-spin w-4 h-4" />
+                  ) : (
+                    <Icon className="w-4 h-4" />
+                  )}
                   <span className="text-xs font-medium sr-only">
                     {item.label}
                   </span>
