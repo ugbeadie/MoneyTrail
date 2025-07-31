@@ -169,8 +169,8 @@ export default function TransactionForm({
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-none shadow-none py-0 bg-transparent">
+      <CardHeader className="px-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
@@ -186,15 +186,20 @@ export default function TransactionForm({
             </Button>
           )}
         </div>
+        <p className="text-muted-foreground text-sm">
+          {isEditing
+            ? "Something not quite right? Let's fix it."
+            : "Let’s get this on the books!"}
+        </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0">
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
           {/* Transaction Type */}
           <div className="flex gap-2">
             <Button
               type="button"
               variant={type === "income" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => handleTypeChange("income")}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
@@ -203,7 +208,7 @@ export default function TransactionForm({
             <Button
               type="button"
               variant={type === "expense" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => handleTypeChange("expense")}
             >
               <MinusCircle className="w-4 h-4 mr-2" />
