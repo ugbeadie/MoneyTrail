@@ -169,7 +169,7 @@ export default function TransactionForm({
   };
 
   return (
-    <Card className="border-none shadow-none py-0">
+    <Card className="border-none shadow-none py-0 bg-transparent">
       <CardHeader className="px-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold">
@@ -199,7 +199,7 @@ export default function TransactionForm({
             <Button
               type="button"
               variant={type === "income" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => handleTypeChange("income")}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
@@ -208,7 +208,7 @@ export default function TransactionForm({
             <Button
               type="button"
               variant={type === "expense" ? "default" : "outline"}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => handleTypeChange("expense")}
             >
               <MinusCircle className="w-4 h-4 mr-2" />

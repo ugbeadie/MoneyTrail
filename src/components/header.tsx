@@ -46,21 +46,16 @@ export function Header() {
           </div>
 
           {/* Navigation Items */}
-          <div className="flex items-center space-x-1">
+          <div className="flex gap-2 w-full max-w-md mx-auto ">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
-                <Link key={item.label} href={item.href}>
+                <Link key={item.label} href={item.href} className="flex-1">
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 text-sm font-medium cursor-pointer transition-colors",
-                      isActive
-                        ? "text-foreground bg-muted font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    )}
+                    type="button"
+                    variant={isActive ? "default" : "outline"}
+                    className="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium transition-colors cursor-pointer"
                   >
                     <Icon className="w-4 h-4" />
                     {item.label}
