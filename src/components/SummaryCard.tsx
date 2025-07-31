@@ -34,14 +34,8 @@ function SummaryCard({ title, value, icon, colorClass }: SummaryCardProps) {
 }
 
 export default function SummaryCards() {
-  // This needs to be converted to a client component to use the context
-  // We'll create a wrapper component instead
-  return <SummaryCardsClient />;
-}
-
-function SummaryCardsClient() {
   const { selectedMonthIndex } = useMonth();
-  const [summary, setSummary] = React.useState<TransactionSummary>({
+  const [summary, setSummary] = useState<TransactionSummary>({
     totalIncome: 0,
     totalExpenses: 0,
     balance: 0,
