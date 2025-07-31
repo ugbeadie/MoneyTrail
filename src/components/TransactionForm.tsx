@@ -169,7 +169,7 @@ export default function TransactionForm({
   };
 
   return (
-    <Card>
+    <Card className="border-none shadow-none py-0">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold">
@@ -186,6 +186,11 @@ export default function TransactionForm({
             </Button>
           )}
         </div>
+        <p className="text-muted-foreground text-sm">
+          {isEditing
+            ? "Something not quite right? Let's fix it."
+            : "Let’s get this on the books!"}
+        </p>
       </CardHeader>
       <CardContent>
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
