@@ -46,30 +46,20 @@ export default function TransactionManager({}: TransactionManagerProps) {
   };
 
   // Handle mobile form close
-  const handleMobileFormClose = () => {
-    setShowMobileForm(false);
-    setEditingTransaction(null);
-  };
+  // const handleMobileFormClose = () => {
+  //   setShowMobileForm(false);
+  //   setEditingTransaction(null);
+  // };
 
   useEffect(() => {
-    const body = document.body;
-    if (showMobileForm) {
-      body.classList.add("mobile-form-open");
-    } else {
-      body.classList.remove("mobile-form-open");
-    }
-
-    // Cleanup function to remove the class when the component unmounts
-    return () => {
-      body.classList.remove("mobile-form-open");
-    };
+    document.body.classList.toggle("mobile-form-open", showMobileForm);
   }, [showMobileForm]);
 
   return (
     <div className="relative">
       <SummaryCards key={`summary-${refreshKey}`} />
       {/* Desktop Layout */}
-      <div className="hidden md:grid md:grid-cols-2 md:gap-8 mt-5">
+      <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-6">
         {/* Transaction List */}
         <div>
           <TransactionList
@@ -90,7 +80,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden mt-4 mb-5">
+      <div className="md:hidden mt-8 mb-5">
         {/* Transaction List - Always visible on mobile */}
         <TransactionList
           key={refreshKey}

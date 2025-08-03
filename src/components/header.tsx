@@ -132,7 +132,7 @@ export function Header() {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "flex flex-col items-center gap-1 px-3 py-2 h-auto min-w-0 transition-colors",
+                    "flex flex-col items-center gap-1 px-3 py-2 h-auto min-w-0 transition-colors cursor-pointer",
                     isActive
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"

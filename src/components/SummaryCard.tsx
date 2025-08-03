@@ -19,16 +19,16 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, value, icon, colorClass }: SummaryCardProps) {
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    <Card className="w-full py-2 md:py-3">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-sm font-medium">{title}:</CardTitle>
+        <CardContent>
+          <div className={`text-lg md:text-2xl font-bold ${colorClass}`}>
+            ₦{Math.abs(value).toFixed(2)}
+          </div>
+        </CardContent>
         <div className="flex-shrink-0">{icon}</div>
       </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${colorClass}`}>
-          ₦{Math.abs(value).toFixed(2)}
-        </div>
-      </CardContent>
     </Card>
   );
 }
@@ -65,9 +65,9 @@ export default function SummaryCards() {
   if (loading) {
     return (
       <div className="w-full">
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-4 w-full">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-2 w-full">
           <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium">Balance</CardTitle>
               <div className="flex-shrink-0">
                 <Wallet className="h-4 w-4 text-blue" />
@@ -81,7 +81,7 @@ export default function SummaryCards() {
           </Card>
 
           <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium">
                 Total Income
               </CardTitle>
@@ -97,7 +97,7 @@ export default function SummaryCards() {
           </Card>
 
           <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 ">
               <CardTitle className="text-sm font-medium">
                 Total Expenses
               </CardTitle>
@@ -118,7 +118,7 @@ export default function SummaryCards() {
 
   return (
     <div className="w-full">
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-4 w-full">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-2 w-full">
         <SummaryCard
           title="Balance"
           value={summary.balance}
@@ -126,13 +126,13 @@ export default function SummaryCards() {
           colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <SummaryCard
-          title="Total Income"
+          title="Income"
           value={summary.totalIncome}
           icon={<TrendingUp className="h-4 w-4 text-green-600" />}
           colorClass="text-green-600"
         />
         <SummaryCard
-          title="Total Expenses"
+          title="Expenses"
           value={summary.totalExpenses}
           icon={<TrendingDown className="h-4 w-4 text-red-600" />}
           colorClass="text-red-600"
