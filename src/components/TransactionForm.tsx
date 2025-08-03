@@ -217,7 +217,6 @@ export default function TransactionForm({
               step="0.01"
               min="0"
               placeholder="0.00"
-              className="cursor-pointer"
               required
             />
           </div>
