@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { addTransaction, updateTransaction } from "@/lib/actions";
-import { PlusCircle, MinusCircle, X, FilePenLine } from "lucide-react";
+import { PlusCircle, MinusCircle, FilePenLine } from "lucide-react";
 import type { TransactionType, Transaction } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -43,25 +43,24 @@ export default function TransactionForm({
   // Get categories based on current type
   const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
-  // Handle editing transaction - set type first
+  // Handle editing transaction - set both type and category
   useEffect(() => {
     if (!editingTransaction) {
       resetFormState();
       return;
     }
 
+    console.log("Setting editing transaction:", editingTransaction); // Debug log
+
+    // Set type and category immediately
     setType(editingTransaction.type);
+    setCategory(editingTransaction.category);
     setShowTypeChangeWarning(false);
     setError(null);
+
+    // Populate form fields immediately
     populateFormFields(editingTransaction);
   }, [editingTransaction]);
-
-  // Set category after type is updated
-  useEffect(() => {
-    const shouldSetCategory =
-      editingTransaction && type === editingTransaction.type;
-    shouldSetCategory && setCategory(editingTransaction.category);
-  }, [editingTransaction, type]);
 
   // Helper functions
   const populateFormFields = (transaction: Transaction) => {
@@ -175,23 +174,15 @@ export default function TransactionForm({
           <CardTitle className="text-xl font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
           </CardTitle>
-          {isEditing && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
         </div>
+
         <p className="text-muted-foreground text-sm">
           {isEditing
             ? "Something not quite right? Let's fix it."
-            : "Let’s get this on the books!"}
+            : "Let's get this on the books!"}
         </p>
       </CardHeader>
+
       <CardContent className="px-0">
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
           {/* Transaction Type */}
@@ -234,6 +225,7 @@ export default function TransactionForm({
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Select
+              key={`${type}-${category}`}
               name="category"
               required
               value={category}
@@ -326,13 +318,23 @@ export default function TransactionForm({
                 ? `${isEditing ? "Updating" : "Saving"}...`
                 : `${isEditing ? "Update" : "Save"} Transaction`}
             </Button>
+            {/* Cancel button - always show on mobile, only show on desktop when editing */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="cursor-pointer bg-transparent md:hidden"
+            >
+              Cancel
+            </Button>
             {isEditing && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                className="cursor-pointer bg-transparent"
+                className="cursor-pointer bg-transparent hidden md:block"
               >
                 Cancel
               </Button>

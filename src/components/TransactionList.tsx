@@ -109,6 +109,7 @@ function TransactionItem({
           </div>
         </div>
       </div>
+
       {/* Delete Confirmation Modal */}
       <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <AlertDialogContent>
@@ -172,6 +173,7 @@ function TransactionGroup({
   const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
+
   const totalExpense = transactions
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
