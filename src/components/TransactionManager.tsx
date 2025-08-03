@@ -51,6 +51,20 @@ export default function TransactionManager({}: TransactionManagerProps) {
     setEditingTransaction(null);
   };
 
+  useEffect(() => {
+    const body = document.body;
+    if (showMobileForm) {
+      body.classList.add("mobile-form-open");
+    } else {
+      body.classList.remove("mobile-form-open");
+    }
+
+    // Cleanup function to remove the class when the component unmounts
+    return () => {
+      body.classList.remove("mobile-form-open");
+    };
+  }, [showMobileForm]);
+
   return (
     <div className="relative">
       <SummaryCards key={`summary-${refreshKey}`} />

@@ -217,6 +217,7 @@ export default function TransactionForm({
               step="0.01"
               min="0"
               placeholder="0.00"
+              className="cursor-pointer"
               required
             />
           </div>
@@ -267,6 +268,7 @@ export default function TransactionForm({
               id="date"
               name="date"
               type="date"
+              className="cursor-pointer"
               defaultValue={new Date().toISOString().split("T")[0]}
               required
             />
@@ -279,6 +281,7 @@ export default function TransactionForm({
               id="description"
               name="description"
               placeholder="Add a note about this transaction..."
+              className="cursor-pointer"
               rows={3}
             />
           </div>
@@ -291,6 +294,7 @@ export default function TransactionForm({
               name="imageUrl"
               type="url"
               placeholder="https://example.com/receipt.jpg"
+              className="cursor-pointer"
             />
             <p className="text-xs text-muted-foreground">
               Add a link to a receipt or photo for this transaction
