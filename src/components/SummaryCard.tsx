@@ -24,11 +24,17 @@ function SummaryCard({
   colorClass,
 }: SummaryCardProps) {
   return (
-    <Card className="w-full py-2 md:py-3">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    <>
+      {/* Desktop SummaryCard */}
+
+      <Card className="w-full py-2 md:py-3 hidden md:block">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+
+          <div className="flex-shrink-0">{icon}</div>
+        </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-8 text-lg md:text-2xl font-bold">
+          <div className={`text-2xl font-bold ${colorClass}`}>
             {loading ? (
               <Spinner />
             ) : (
@@ -36,9 +42,27 @@ function SummaryCard({
             )}
           </div>
         </CardContent>
-        <div className="flex-shrink-0">{icon}</div>
-      </CardHeader>
-    </Card>
+      </Card>
+
+      {/* Mobile SummaryCard */}
+      <Card className="w-full py-2 md:py-3 md:hidden">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <CardContent>
+            <div className="flex items-center justify-center h-8 text-lg md:text-2xl font-bold">
+              {loading ? (
+                <Spinner />
+              ) : (
+                <span className={colorClass}>
+                  ₦{Math.abs(value).toFixed(2)}
+                </span>
+              )}
+            </div>
+          </CardContent>
+          <div className="flex-shrink-0">{icon}</div>
+        </CardHeader>
+      </Card>
+    </>
   );
 }
 
