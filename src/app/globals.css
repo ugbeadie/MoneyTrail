@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+body {
+  scrollbar-gutter: stable;
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }

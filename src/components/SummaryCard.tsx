@@ -1,30 +1,39 @@
 "use client";
 
-import React from "react";
 import { useState, useEffect } from "react";
-import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTransactionSummaryByMonth } from "@/lib/actions";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
-import type { TransactionSummary } from "@/types/transaction";
 import { useMonth } from "@/contexts/MonthContext";
 import { Spinner } from "@/components/ui/spinner";
+import type { TransactionSummary } from "@/types/transaction";
 
 interface SummaryCardProps {
   title: string;
   value: number;
-  icon: ReactNode;
+  icon: React.ReactNode;
+  loading: boolean;
   colorClass: string;
 }
 
-function SummaryCard({ title, value, icon, colorClass }: SummaryCardProps) {
+function SummaryCard({
+  title,
+  value,
+  icon,
+  loading,
+  colorClass,
+}: SummaryCardProps) {
   return (
     <Card className="w-full py-2 md:py-3">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-sm font-medium">{title}:</CardTitle>
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <CardContent>
-          <div className={`text-lg md:text-2xl font-bold ${colorClass}`}>
-            ₦{Math.abs(value).toFixed(2)}
+          <div className="flex items-center justify-center h-8 text-lg md:text-2xl font-bold">
+            {loading ? (
+              <Spinner />
+            ) : (
+              <span className={colorClass}>₦{Math.abs(value).toFixed(2)}</span>
+            )}
           </div>
         </CardContent>
         <div className="flex-shrink-0">{icon}</div>
@@ -44,8 +53,8 @@ export default function SummaryCards() {
 
   useEffect(() => {
     const fetchSummary = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
         const currentYear = new Date().getFullYear();
         const data = await getTransactionSummaryByMonth(
           selectedMonthIndex,
@@ -62,60 +71,6 @@ export default function SummaryCards() {
     fetchSummary();
   }, [selectedMonthIndex]);
 
-  if (loading) {
-    return (
-      <div className="w-full">
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-2 w-full">
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-sm font-medium">Balance</CardTitle>
-              <div className="flex-shrink-0">
-                <Wallet className="h-4 w-4 text-blue" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-8">
-                <Spinner />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-sm font-medium">
-                Total Income
-              </CardTitle>
-              <div className="flex-shrink-0">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-8">
-                <Spinner />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 ">
-              <CardTitle className="text-sm font-medium">
-                Total Expenses
-              </CardTitle>
-              <div className="flex-shrink-0">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-8">
-                <Spinner />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-2 w-full">
@@ -123,18 +78,21 @@ export default function SummaryCards() {
           title="Balance"
           value={summary.balance}
           icon={<Wallet className="h-4 w-4 text-blue" />}
+          loading={loading}
           colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <SummaryCard
           title="Income"
           value={summary.totalIncome}
           icon={<TrendingUp className="h-4 w-4 text-green-600" />}
+          loading={loading}
           colorClass="text-green-600"
         />
         <SummaryCard
-          title="Expenses"
+          title="Expense"
           value={summary.totalExpenses}
           icon={<TrendingDown className="h-4 w-4 text-red-600" />}
+          loading={loading}
           colorClass="text-red-600"
         />
       </div>
