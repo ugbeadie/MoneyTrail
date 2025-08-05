@@ -1,6 +1,5 @@
 "use client";
-
-import type React from "react";
+import React from "react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { addTransaction, updateTransaction } from "@/lib/actions";
-import { PlusCircle, MinusCircle, FilePenLine } from "lucide-react";
+import { PlusCircle, MinusCircle, FilePenLine, X } from "lucide-react"; // Added X for close button
 import type { TransactionType, Transaction } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -37,11 +36,13 @@ export default function TransactionForm({
   const [error, setError] = useState<string | null>(null);
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-
   const isEditing = !!editingTransaction;
 
   // Get categories based on current type
-  const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories = React.useMemo(() => {
+    const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    return cats;
+  }, [type]);
 
   // Handle editing transaction - set both type and category
   useEffect(() => {
@@ -49,8 +50,6 @@ export default function TransactionForm({
       resetFormState();
       return;
     }
-
-    console.log("Setting editing transaction:", editingTransaction); // Debug log
 
     // Set type and category immediately
     setType(editingTransaction.type);
@@ -105,7 +104,6 @@ export default function TransactionForm({
 
   const handleTypeChange = (newType: TransactionType) => {
     if (newType === type) return;
-
     setType(newType);
     setCategory("");
     setError(null);
@@ -174,15 +172,22 @@ export default function TransactionForm({
           <CardTitle className="text-xl font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
           </CardTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            className="cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </div>
-
         <p className="text-muted-foreground text-sm">
           {isEditing
             ? "Something not quite right? Let's fix it."
             : "Let's get this on the books!"}
         </p>
       </CardHeader>
-
       <CardContent className="px-0">
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
           {/* Transaction Type */}
@@ -225,11 +230,11 @@ export default function TransactionForm({
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Select
-              key={`${type}-${category}`}
               name="category"
               required
               value={category}
               onValueChange={handleCategoryChange}
+              key={category + type} // Force re-render when category or type changes
             >
               <SelectTrigger
                 className={`${
@@ -267,7 +272,6 @@ export default function TransactionForm({
               id="date"
               name="date"
               type="date"
-              className="cursor-pointer"
               defaultValue={new Date().toISOString().split("T")[0]}
               required
             />
@@ -280,7 +284,6 @@ export default function TransactionForm({
               id="description"
               name="description"
               placeholder="Add a note about this transaction..."
-              className="cursor-pointer"
               rows={3}
             />
           </div>
@@ -293,7 +296,6 @@ export default function TransactionForm({
               name="imageUrl"
               type="url"
               placeholder="https://example.com/receipt.jpg"
-              className="cursor-pointer"
             />
             <p className="text-xs text-muted-foreground">
               Add a link to a receipt or photo for this transaction
@@ -321,27 +323,15 @@ export default function TransactionForm({
                 ? `${isEditing ? "Updating" : "Saving"}...`
                 : `${isEditing ? "Update" : "Save"} Transaction`}
             </Button>
-            {/* Cancel button - always show on mobile, only show on desktop when editing */}
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
               disabled={isSubmitting}
-              className="cursor-pointer bg-transparent md:hidden"
+              className="cursor-pointer bg-transparent"
             >
               Cancel
             </Button>
-            {isEditing && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="cursor-pointer bg-transparent hidden md:block"
-              >
-                Cancel
-              </Button>
-            )}
           </div>
         </form>
       </CardContent>

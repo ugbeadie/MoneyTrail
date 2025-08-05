@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import SummaryCards from "./SummaryCard";
+import { SummaryCards } from "./SummaryCard";
 import TransactionForm from "./TransactionForm";
 import TransactionList from "./TransactionList";
+// import { handleRefresh } from "@/utils/transaction-utils" // Declare or import handleRefresh
 
 type TransactionManagerProps = {};
 
@@ -15,6 +16,10 @@ export default function TransactionManager({}: TransactionManagerProps) {
   const [showMobileForm, setShowMobileForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Handle refresh
+  const handleRefresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
   // Handle editing a transaction
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -25,7 +30,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
   const handleTransactionSaved = () => {
     setEditingTransaction(null);
     setShowMobileForm(false); // Hide form on mobile after saving
-    handleRefresh();
+    setRefreshKey((prev) => prev + 1); // Refresh list and summary
   };
 
   // Handle cancel edit
@@ -34,25 +39,22 @@ export default function TransactionManager({}: TransactionManagerProps) {
     setShowMobileForm(false); // Hide form on mobile when canceling
   };
 
-  // Handle refresh
-  const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
-
   // Handle floating button click
   const handleFloatingButtonClick = () => {
     setEditingTransaction(null); // Clear any editing transaction
     setShowMobileForm(true);
   };
 
-  // Handle mobile form close
-  // const handleMobileFormClose = () => {
-  //   setShowMobileForm(false);
-  //   setEditingTransaction(null);
-  // };
-
+  // Prevent body scroll when mobile form is open - ONLY on mobile
   useEffect(() => {
-    document.body.classList.toggle("mobile-form-open", showMobileForm);
+    // Only prevent scroll on mobile when form is open
+    const isMobile = window.innerWidth < 768; // md breakpoint
+
+    if (showMobileForm && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
   }, [showMobileForm]);
 
   return (
@@ -92,7 +94,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
         {!showMobileForm && (
           <Button
             onClick={handleFloatingButtonClick}
-            className="fixed bottom-14 right-6 h-12 w-12 rounded-full shadow-lg z-40 cursor-pointer"
+            className="fixed bottom-14 right-5 h-12 w-12 rounded-full shadow-lg z-1 cursor-pointer"
             size="icon"
           >
             <Plus className="h-6 w-6" />

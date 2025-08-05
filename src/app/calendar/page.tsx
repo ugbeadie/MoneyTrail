@@ -1,12 +1,335 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Plus, X, ArrowLeft } from "lucide-react";
+import type { Transaction } from "@/types/transaction";
+import { SummaryCards } from "@/components/SummaryCard";
+import TransactionForm from "@/components/TransactionForm";
+import TransactionCalendar from "@/components/TransactionCalendar";
+import { MonthProvider } from "@/contexts/MonthContext";
+// import { MonthPickerTab } from "@/components/MonthPickerTab";
+
 export default function CalendarPage() {
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [showCalendarPanel, setShowCalendarPanel] = useState(false);
+  const [selectedDateForPanel, setSelectedDateForPanel] = useState<
+    string | null
+  >(null);
+  const [selectedDayDataForPanel, setSelectedDayDataForPanel] =
+    useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Handle editing a transaction (from calendar panel)
+  const handleEditTransaction = (transaction: Transaction) => {
+    // console.log("Editing transaction:", transaction); // ADDED: Check transaction object
+    setEditingTransaction(transaction);
+    setShowForm(true); // Show form
+    setShowCalendarPanel(false); // Close calendar panel if open
+  };
+
+  // Handle transaction saved (add or edit)
+  const handleTransactionSaved = () => {
+    setEditingTransaction(null);
+    setShowForm(false); // Hide form
+    setRefreshKey((prev) => prev + 1); // Refresh SummaryCards and Calendar
+    // Close the panel after saving, it will re-open with fresh data if the same day is clicked
+    setShowCalendarPanel(false);
+    setSelectedDateForPanel(null);
+    setSelectedDayDataForPanel(null);
+  };
+
+  // Handle cancel form
+  const handleCancelForm = () => {
+    setEditingTransaction(null);
+    setShowForm(false);
+  };
+
+  // Handle floating plus button click (opens form)
+  const handleFloatingButtonClick = () => {
+    setEditingTransaction(null); // Clear any editing transaction
+    setShowForm(true);
+    setShowCalendarPanel(false); // Close calendar panel if open
+  };
+
+  // Handle day click on calendar - opens the panel
+  const handleCalendarDayClick = (dateStr: string, dayData: any) => {
+    setSelectedDateForPanel(dateStr);
+    setSelectedDayDataForPanel(dayData);
+    setShowCalendarPanel(true);
+  };
+
+  // Handle close calendar panel
+  const handleCloseCalendarPanel = () => {
+    setShowCalendarPanel(false);
+    setSelectedDateForPanel(null);
+    setSelectedDayDataForPanel(null);
+  };
+
+  // Prevent body scroll when mobile form or panel is open
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768; // md breakpoint
+    if ((showForm || showCalendarPanel) && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showForm, showCalendarPanel]);
+
   return (
-    <div className="container mx-auto px-4 py-8 pb-20 md:pb-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-        <p className="text-muted-foreground mt-2">
-          Calendar page content will go here.
-        </p>
+    <MonthProvider>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <hr className="border-muted" />
+        <h1 className="font-bold text-2xl">Summary</h1>
+        {/* <MonthPickerTab /> */}
+        <SummaryCards key={`summary-${refreshKey}`} />
+        {/* Desktop Layout */}
+        <div className="hidden md:flex gap-4 mt-6 h-[calc(100vh-200px)]">
+          {/* Calendar */}
+          <div
+            className={`transition-all duration-300 ${
+              showCalendarPanel ? "w-2/3" : "w-full"
+            }`}
+          >
+            <TransactionCalendar
+              key={`calendar-${refreshKey}`} // Key to force remount/refresh
+              onDayClick={handleCalendarDayClick}
+              onAddTransaction={handleFloatingButtonClick} // Pass the manager's add function
+              onEditTransaction={handleEditTransaction} // Pass the manager's edit function
+            />
+          </div>
+          {/* Desktop Panel */}
+          {showCalendarPanel && (
+            <div className="w-1/3 transition-all duration-300">
+              <div className="h-full flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h2 className="font-semibold text-lg">
+                    {selectedDateForPanel &&
+                      new Date(
+                        selectedDateForPanel + "T12:00:00"
+                      ).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCloseCalendarPanel}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {selectedDayDataForPanel ? (
+                    <>
+                      {/* Summary */}
+                      <div className="grid grid-cols-3 gap-2 text-sm text-center">
+                        <div>
+                          <div className=" font-medium">Income</div>
+                          <div className="text-green-600">
+                            ₦{selectedDayDataForPanel.income.toFixed(2)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium">Expense</div>
+                          <div className="text-red-600">
+                            ₦{selectedDayDataForPanel.expense.toFixed(2)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium">Balance</div>
+                          <div className="text-black-600">
+                            ₦{selectedDayDataForPanel.balance.toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Transactions */}
+                      <div className="space-y-2">
+                        {selectedDayDataForPanel.transactions.map(
+                          (transaction: Transaction) => (
+                            <div
+                              key={transaction.id}
+                              className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                              onClick={() => handleEditTransaction(transaction)}
+                            >
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="font-medium">
+                                    {transaction.description}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {transaction.category}
+                                  </div>
+                                </div>
+                                <div
+                                  className={`font-medium ${
+                                    transaction.type === "income"
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {transaction.type === "income" ? "+" : "-"}₦
+                                  {transaction.amount.toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      No transactions for this day
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Mobile Layout */}
+        <div className="md:hidden mt-6">
+          {/* Calendar */}
+          {!showCalendarPanel && (
+            <TransactionCalendar
+              key={`calendar-mobile-${refreshKey}`}
+              onDayClick={handleCalendarDayClick}
+              onAddTransaction={handleFloatingButtonClick}
+              onEditTransaction={handleEditTransaction}
+            />
+          )}
+          {/* Mobile Panel */}
+          {showCalendarPanel && (
+            <div className="fixed inset-0 bg-background z-50 flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCloseCalendarPanel}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <h2 className="font-semibold">
+                    {selectedDateForPanel &&
+                      new Date(
+                        selectedDateForPanel + "T12:00:00"
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                  </h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseCalendarPanel}
+                >
+                  Close
+                </Button>
+              </div>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {selectedDayDataForPanel ? (
+                  <>
+                    {/* Summary */}
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-blue-600 font-medium">Income</div>
+                        <div>₦{selectedDayDataForPanel.income.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-red-600 font-medium">Expense</div>
+                        <div>₦{selectedDayDataForPanel.expense.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Total</div>
+                        <div
+                          className={
+                            selectedDayDataForPanel.balance >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        >
+                          ₦{selectedDayDataForPanel.balance.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Transactions */}
+                    <div className="space-y-3">
+                      {selectedDayDataForPanel.transactions.map(
+                        (transaction: Transaction) => (
+                          <div
+                            key={transaction.id}
+                            className="p-4 border rounded-lg"
+                            onClick={() => handleEditTransaction(transaction)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="text-sm">
+                                  {transaction.description}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {transaction.category}
+                                </div>
+                              </div>
+                              <div
+                                className={`font-medium ${
+                                  transaction.type === "income"
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }`}
+                              >
+                                {transaction.type === "income" ? "+" : "-"}₦
+                                {transaction.amount.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    No transactions for this day
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Floating Add Button (always visible unless form is open) */}
+        {!showForm && (
+          <Button
+            onClick={handleFloatingButtonClick}
+            className="fixed bottom-14 right-5 h-12 w-12 rounded-full shadow-lg z-1 cursor-pointer"
+            size="icon"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        )}
+        {/* Transaction Form Modal (full screen overlay) */}
+        {showForm && (
+          <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+            <div className="p-4">
+              <TransactionForm
+                editingTransaction={editingTransaction}
+                onTransactionSaved={handleTransactionSaved}
+                onCancelEdit={handleCancelForm}
+              />
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </MonthProvider>
   );
 }

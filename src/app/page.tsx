@@ -6,7 +6,8 @@ export default function HomePage() {
   return (
     <MonthProvider>
       <div className="min-h-screen bg-background flex flex-col">
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-0 flex-1 w-full flex flex-col">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 flex-1 w-full flex flex-col">
+          <hr className="border-muted" />
           <MonthPickerTab />
           <div className="w-full flex-1">
             <TransactionManager />

@@ -3,7 +3,7 @@
 import { Toaster } from "sonner";
 import { useTheme } from "next-themes";
 
-export default function ToasterProvider() {
+export function ToasterProvider() {
   const { resolvedTheme } = useTheme();
 
   return (

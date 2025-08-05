@@ -44,7 +44,7 @@ export function Header() {
   return (
     <>
       {/* Desktop Navigation - Top Fixed */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
         <div className="flex items-center justify-between max-w-6xl mx-auto w-full px-6 py-3">
           {/* Logo */}
           <div className="flex items-center">
@@ -97,7 +97,7 @@ export function Header() {
       </nav>
 
       {/* Mobile Top Bar - Logo and Theme Toggle Fixed */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
         <div className="flex items-center justify-between px-6 py-3">
           {/* Logo */}
           <div className="flex items-center">
@@ -120,7 +120,7 @@ export function Header() {
       </nav>
 
       {/* Mobile Bottom Navigation - Fixed */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="flex items-center justify-around px-2 py-2">
           {navItems.map((item) => {
             const Icon = item.icon;

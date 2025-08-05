@@ -1,13 +1,13 @@
 "use client";
-
 import { useState, useEffect } from "react";
+import type React from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTransactionSummaryByMonth } from "@/lib/actions";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { useMonth } from "@/contexts/MonthContext";
 import { Spinner } from "@/components/ui/spinner";
 import type { TransactionSummary } from "@/types/transaction";
-
 interface SummaryCardProps {
   title: string;
   value: number;
@@ -15,7 +15,6 @@ interface SummaryCardProps {
   loading: boolean;
   colorClass: string;
 }
-
 function SummaryCard({
   title,
   value,
@@ -26,12 +25,10 @@ function SummaryCard({
   return (
     <>
       {/* Desktop SummaryCard */}
-
       <Card className="w-full py-2 md:py-3 hidden md:block">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-sm font-medium">{title}</CardTitle>
-
-          <div className="flex-shrink-0">{icon}</div>
+          {icon}
         </CardHeader>
         <CardContent>
           <div className={`text-2xl font-bold ${colorClass}`}>
@@ -43,7 +40,6 @@ function SummaryCard({
           </div>
         </CardContent>
       </Card>
-
       {/* Mobile SummaryCard */}
       <Card className="w-full py-2 md:py-3 md:hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -65,8 +61,7 @@ function SummaryCard({
     </>
   );
 }
-
-export default function SummaryCards() {
+export function SummaryCards() {
   const { selectedMonthIndex } = useMonth();
   const [summary, setSummary] = useState<TransactionSummary>({
     totalIncome: 0,
@@ -74,7 +69,6 @@ export default function SummaryCards() {
     balance: 0,
   });
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchSummary = async () => {
       setLoading(true);
@@ -91,10 +85,8 @@ export default function SummaryCards() {
         setLoading(false);
       }
     };
-
     fetchSummary();
   }, [selectedMonthIndex]);
-
   return (
     <div className="w-full">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-2 w-full">
@@ -103,7 +95,9 @@ export default function SummaryCards() {
           value={summary.balance}
           icon={<Wallet className="h-4 w-4 text-blue" />}
           loading={loading}
-          colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
+          colorClass="text-black-600"
+
+          // colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <SummaryCard
           title="Income"
