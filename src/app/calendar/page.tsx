@@ -7,6 +7,8 @@ import type { Transaction } from "@/types/transaction";
 import { SummaryCards } from "@/components/SummaryCard";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionCalendar from "@/components/TransactionCalendar";
+import type { DayData } from "@/components/TransactionCalendar";
+
 import { MonthProvider } from "@/contexts/MonthContext";
 // import { MonthPickerTab } from "@/components/MonthPickerTab";
 
@@ -19,7 +21,8 @@ export default function CalendarPage() {
     string | null
   >(null);
   const [selectedDayDataForPanel, setSelectedDayDataForPanel] =
-    useState<any>(null);
+    useState<DayData | null>(null);
+
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Handle editing a transaction (from calendar panel)
@@ -55,7 +58,7 @@ export default function CalendarPage() {
   };
 
   // Handle day click on calendar - opens the panel
-  const handleCalendarDayClick = (dateStr: string, dayData: any) => {
+  const openDayDetailsPanel = (dateStr: string, dayData: any) => {
     setSelectedDateForPanel(dateStr);
     setSelectedDayDataForPanel(dayData);
     setShowCalendarPanel(true);
@@ -98,7 +101,7 @@ export default function CalendarPage() {
           >
             <TransactionCalendar
               key={`calendar-${refreshKey}`} // Key to force remount/refresh
-              onDayClick={handleCalendarDayClick}
+              onDaySelected={openDayDetailsPanel}
               onAddTransaction={handleFloatingButtonClick} // Pass the manager's add function
               onEditTransaction={handleEditTransaction} // Pass the manager's edit function
             />
@@ -201,7 +204,7 @@ export default function CalendarPage() {
           {!showCalendarPanel && (
             <TransactionCalendar
               key={`calendar-mobile-${refreshKey}`}
-              onDayClick={handleCalendarDayClick}
+              onDaySelected={openDayDetailsPanel}
               onAddTransaction={handleFloatingButtonClick}
               onEditTransaction={handleEditTransaction}
             />

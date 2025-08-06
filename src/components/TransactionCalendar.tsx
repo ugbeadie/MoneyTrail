@@ -19,7 +19,7 @@ import { getTransactionsByMonth } from "@/lib/actions";
 import { useMonth } from "@/contexts/MonthContext";
 import { months } from "@/lib/constants";
 
-interface DayData {
+export interface DayData {
   date: string;
   income: number;
   expense: number;
@@ -28,7 +28,7 @@ interface DayData {
 }
 
 interface TransactionCalendarProps {
-  onDayClick: (dateStr: string, dayData: DayData | null) => void;
+  onDaySelected: (dateStr: string, dayData: DayData | null) => void;
   onAddTransaction: () => void; // Callback for the floating plus button
   onEditTransaction: (transaction: Transaction) => void; // Callback for editing from panel
 }
@@ -42,7 +42,7 @@ const formatDateForKey = (date: Date): string => {
 };
 
 export default function TransactionCalendar({
-  onDayClick,
+  onDaySelected,
   onAddTransaction,
   onEditTransaction,
 }: TransactionCalendarProps) {
@@ -132,18 +132,18 @@ export default function TransactionCalendar({
   };
 
   // Handle day click - emit event to parent
-  const handleFullCalendarDateClick = (info: any) => {
+  const handleDayClick = (info: any) => {
     const clickedDate = new Date(info.date);
     const dateStr = formatDateForKey(clickedDate);
     const data = dayData[dateStr] || null; // Get data for the clicked day
-    onDayClick(dateStr, data);
+    onDaySelected(dateStr, data);
   };
 
   // Generate year options (current year ± 5 years)
-  const yearOptions = Array.from({ length: 11 }, (_, i) => {
-    const year = new Date().getFullYear() - 5 + i;
-    return year.toString();
-  });
+  // const yearOptions = Array.from({ length: 11 }, (_, i) => {
+  //   const year = new Date().getFullYear() - 5 + i;
+  //   return year.toString();
+  // });
 
   return (
     <Card className="h-full flex flex-col mb-8 border-0 shadow-none">
@@ -200,7 +200,7 @@ export default function TransactionCalendar({
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             initialDate={new Date(currentYear, selectedMonthIndex, 1)}
-            dateClick={handleFullCalendarDateClick}
+            dateClick={handleDayClick}
             height="auto"
             headerToolbar={false} // Remove default header
             dayMaxEvents={false}
