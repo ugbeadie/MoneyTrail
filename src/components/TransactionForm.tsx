@@ -38,6 +38,13 @@ export default function TransactionForm({
   const formRef = useRef<HTMLFormElement>(null);
   const isEditing = !!editingTransaction;
 
+  //convert the date to a local date string formatted as YYYY-MM-DD
+  function getLocalDateISO(): string {
+    const local = new Date();
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return local.toISOString().split("T")[0];
+  }
+
   // Get categories based on current type
   const categories = useMemo(() => {
     const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -272,7 +279,7 @@ export default function TransactionForm({
               id="date"
               name="date"
               type="date"
-              defaultValue={new Date().toISOString().split("T")[0]}
+              defaultValue={getLocalDateISO()}
               required
             />
           </div>
