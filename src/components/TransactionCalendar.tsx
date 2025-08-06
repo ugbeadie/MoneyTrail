@@ -5,7 +5,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -29,11 +29,10 @@ export interface DayData {
 
 interface TransactionCalendarProps {
   onDaySelected: (dateStr: string, dayData: DayData | null) => void;
-  onAddTransaction: () => void; // Callback for the floating plus button
-  onEditTransaction: (transaction: Transaction) => void; // Callback for editing from panel
+  onAddTransaction: () => void;
+  onEditTransaction: (transaction: Transaction) => void;
 }
 
-// Helper function to format date consistently for keys (local date)
 const formatDateForKey = (date: Date): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -52,23 +51,20 @@ export default function TransactionCalendar({
   const calendarRef = useRef<FullCalendar>(null);
   const { selectedMonthIndex, setSelectedMonth, selectedMonth } = useMonth();
 
-  // Fetch transactions and calculate day data
   const fetchCalendarData = async (month: number, year: number) => {
     try {
       setLoading(true);
       const transactions = await getTransactionsByMonth(month, year);
-
       const grouped: { [key: string]: DayData } = {};
 
       transactions.forEach((transaction) => {
-        // Ensure transaction date is treated as local for grouping
-        const transactionDate = new Date(transaction.date); // This is a UTC date object from Prisma
+        const transactionDate = new Date(transaction.date);
         const localYear = transactionDate.getFullYear();
         const localMonth = transactionDate.getMonth();
         const localDay = transactionDate.getDate();
         const dateStr = formatDateForKey(
           new Date(localYear, localMonth, localDay)
-        ); // Create a new Date object for local date
+        );
 
         if (!grouped[dateStr]) {
           grouped[dateStr] = {
@@ -81,7 +77,6 @@ export default function TransactionCalendar({
         }
 
         grouped[dateStr].transactions.push(transaction);
-
         if (transaction.type === "income") {
           grouped[dateStr].income += transaction.amount;
         } else {
@@ -100,28 +95,19 @@ export default function TransactionCalendar({
     }
   };
 
-  // Load data when month or year changes
   useEffect(() => {
     fetchCalendarData(selectedMonthIndex, currentYear);
 
-    // Update calendar view when month changes
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
       calendarApi.gotoDate(new Date(currentYear, selectedMonthIndex, 1));
     }
   }, [selectedMonthIndex, currentYear]);
 
-  // Handle month change from dropdown
   const handleMonthChange = (monthName: string) => {
     setSelectedMonth(monthName);
   };
 
-  // Handle year change
-  // const handleYearChange = (year: string) => {
-  //   setCurrentYear(Number.parseInt(year));
-  // };
-
-  // Handle today button
   const handleTodayClick = () => {
     const today = new Date();
     const todayMonth = months[today.getMonth()];
@@ -131,64 +117,40 @@ export default function TransactionCalendar({
     setCurrentYear(todayYear);
   };
 
-  // Handle day click - emit event to parent
   const handleDayClick = (info: any) => {
     const clickedDate = new Date(info.date);
     const dateStr = formatDateForKey(clickedDate);
-    const data = dayData[dateStr] || null; // Get data for the clicked day
+    const data = dayData[dateStr] || null;
     onDaySelected(dateStr, data);
   };
-
-  // Generate year options (current year ± 5 years)
-  // const yearOptions = Array.from({ length: 11 }, (_, i) => {
-  //   const year = new Date().getFullYear() - 5 + i;
-  //   return year.toString();
-  // });
 
   return (
     <Card className="h-full flex flex-col mb-8 border-0 shadow-none">
       <CardHeader className="flex-shrink-0">
-        <div className="flex items-center justify-end">
-          {/* <CardTitle>Transaction Calendar</CardTitle> */}
-          <div className="flex items-center gap-2">
-            <Select value={selectedMonth} onValueChange={handleMonthChange}>
-              <SelectTrigger className="max-w-28 md:w-28 cursor-pointer">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month} value={month}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* <Select
-              value={currentYear.toString()}
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger className="max-w-22">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {yearOptions.map((year) => (
-                  <SelectItem key={year} value={year}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select> */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="max-w-22 cursor-pointer"
-              onClick={handleTodayClick}
-            >
-              Today
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          <Select value={selectedMonth} onValueChange={handleMonthChange}>
+            <SelectTrigger className="max-w-28 md:w-28 cursor-pointer">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map((month) => (
+                <SelectItem key={month} value={month}>
+                  {month}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            className="max-w-22 cursor-pointer"
+            onClick={handleTodayClick}
+          >
+            Today
+          </Button>
         </div>
       </CardHeader>
+
       <CardContent className="flex-1 overflow-y-auto px-0">
         {loading ? (
           <div className="flex items-center justify-center h-full">
@@ -202,7 +164,7 @@ export default function TransactionCalendar({
             initialDate={new Date(currentYear, selectedMonthIndex, 1)}
             dateClick={handleDayClick}
             height="auto"
-            headerToolbar={false} // Remove default header
+            headerToolbar={false}
             dayMaxEvents={false}
             moreLinkClick="popover"
             dayHeaderFormat={{ weekday: "short" }}
@@ -237,21 +199,16 @@ export default function TransactionCalendar({
                           </div>
                         )}
                         {data.balance !== 0 && (
-                          <div className="font-bold text-black-600 lg:text-sm">
-                            ₦{data.balance.toLocaleString()}
-                          </div>
-                        )}
-                        {/* {data.balance !== 0 && (
                           <div
-                            className={`font-bold ${
+                            className={`font-bold lg:text-sm ${
                               data.balance >= 0
                                 ? "text-green-600"
                                 : "text-red-600"
                             }`}
                           >
-                            ₦{data.balance.toLocaleString()}
+                            ₦{Math.abs(data.balance).toLocaleString()}
                           </div>
-                        )} */}
+                        )}
                       </div>
                     </div>
                   )}
@@ -262,7 +219,6 @@ export default function TransactionCalendar({
         )}
       </CardContent>
 
-      {/* Custom CSS for calendar styling */}
       <style jsx global>{`
         .fc-daygrid-day-frame {
           min-height: 80px;
@@ -302,7 +258,6 @@ export default function TransactionCalendar({
           cursor: pointer;
         }
 
-        /* Dark mode fixes */
         .dark .fc-daygrid-day-number {
           color: hsl(var(--foreground));
         }
@@ -327,7 +282,6 @@ export default function TransactionCalendar({
           background-color: hsl(var(--muted));
         }
 
-        /* Day header styling */
         .fc-col-header-cell {
           background-color: hsl(var(--muted));
           font-weight: 600;

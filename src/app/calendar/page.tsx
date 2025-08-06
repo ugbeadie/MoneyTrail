@@ -8,9 +8,7 @@ import { SummaryCards } from "@/components/SummaryCard";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionCalendar from "@/components/TransactionCalendar";
 import type { DayData } from "@/components/TransactionCalendar";
-
 import { MonthProvider } from "@/contexts/MonthContext";
-// import { MonthPickerTab } from "@/components/MonthPickerTab";
 
 export default function CalendarPage() {
   const [editingTransaction, setEditingTransaction] =
@@ -22,63 +20,50 @@ export default function CalendarPage() {
   >(null);
   const [selectedDayDataForPanel, setSelectedDayDataForPanel] =
     useState<DayData | null>(null);
-
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Handle editing a transaction (from calendar panel)
   const handleEditTransaction = (transaction: Transaction) => {
-    // console.log("Editing transaction:", transaction); // ADDED: Check transaction object
     setEditingTransaction(transaction);
-    setShowForm(true); // Show form
-    setShowCalendarPanel(false); // Close calendar panel if open
+    setShowForm(true);
+    setShowCalendarPanel(false);
   };
 
-  // Handle transaction saved (add or edit)
   const handleTransactionSaved = () => {
     setEditingTransaction(null);
-    setShowForm(false); // Hide form
-    setRefreshKey((prev) => prev + 1); // Refresh SummaryCards and Calendar
-    // Close the panel after saving, it will re-open with fresh data if the same day is clicked
+    setShowForm(false);
+    setRefreshKey((prev) => prev + 1);
     setShowCalendarPanel(false);
     setSelectedDateForPanel(null);
     setSelectedDayDataForPanel(null);
   };
 
-  // Handle cancel form
   const handleCancelForm = () => {
     setEditingTransaction(null);
     setShowForm(false);
   };
 
-  // Handle floating plus button click (opens form)
   const handleFloatingButtonClick = () => {
-    setEditingTransaction(null); // Clear any editing transaction
+    setEditingTransaction(null);
     setShowForm(true);
-    setShowCalendarPanel(false); // Close calendar panel if open
+    setShowCalendarPanel(false);
   };
 
-  // Handle day click on calendar - opens the panel
   const openDayDetailsPanel = (dateStr: string, dayData: any) => {
     setSelectedDateForPanel(dateStr);
     setSelectedDayDataForPanel(dayData);
     setShowCalendarPanel(true);
   };
 
-  // Handle close calendar panel
   const handleCloseCalendarPanel = () => {
     setShowCalendarPanel(false);
     setSelectedDateForPanel(null);
     setSelectedDayDataForPanel(null);
   };
 
-  // Prevent body scroll when mobile form or panel is open
   useEffect(() => {
-    const isMobile = window.innerWidth < 768; // md breakpoint
-    if ((showForm || showCalendarPanel) && isMobile) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    const isMobile = window.innerWidth < 768;
+    document.body.style.overflow =
+      (showForm || showCalendarPanel) && isMobile ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -89,24 +74,23 @@ export default function CalendarPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <hr className="border-muted" />
         <h1 className="font-bold text-2xl">Summary</h1>
-        {/* <MonthPickerTab /> */}
         <SummaryCards key={`summary-${refreshKey}`} />
+
         {/* Desktop Layout */}
         <div className="hidden md:flex gap-4 mt-6 h-[calc(100vh-200px)]">
-          {/* Calendar */}
           <div
             className={`transition-all duration-300 ${
               showCalendarPanel ? "w-2/3" : "w-full"
             }`}
           >
             <TransactionCalendar
-              key={`calendar-${refreshKey}`} // Key to force remount/refresh
+              key={`calendar-${refreshKey}`}
               onDaySelected={openDayDetailsPanel}
-              onAddTransaction={handleFloatingButtonClick} // Pass the manager's add function
-              onEditTransaction={handleEditTransaction} // Pass the manager's edit function
+              onAddTransaction={handleFloatingButtonClick}
+              onEditTransaction={handleEditTransaction}
             />
           </div>
-          {/* Desktop Panel */}
+
           {showCalendarPanel && (
             <div className="w-1/3 transition-all duration-300">
               <div className="h-full flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm">
@@ -149,8 +133,17 @@ export default function CalendarPage() {
                         </div>
                         <div>
                           <div className="font-medium">Balance</div>
-                          <div className="text-black-600">
-                            ₦{selectedDayDataForPanel.balance.toFixed(2)}
+                          <div
+                            className={
+                              selectedDayDataForPanel.balance >= 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }
+                          >
+                            ₦
+                            {Math.abs(selectedDayDataForPanel.balance).toFixed(
+                              2
+                            )}
                           </div>
                         </div>
                       </div>
@@ -198,9 +191,9 @@ export default function CalendarPage() {
             </div>
           )}
         </div>
+
         {/* Mobile Layout */}
         <div className="md:hidden mt-6">
-          {/* Calendar */}
           {!showCalendarPanel && (
             <TransactionCalendar
               key={`calendar-mobile-${refreshKey}`}
@@ -209,10 +202,8 @@ export default function CalendarPage() {
               onEditTransaction={handleEditTransaction}
             />
           )}
-          {/* Mobile Panel */}
           {showCalendarPanel && (
             <div className="fixed inset-0 bg-background z-50 flex flex-col">
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-2">
                   <Button
@@ -240,22 +231,25 @@ export default function CalendarPage() {
                   Close
                 </Button>
               </div>
-              {/* Content */}
+
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {selectedDayDataForPanel ? (
                   <>
-                    {/* Summary */}
-                    <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="grid grid-cols-3 gap-2 text-sm text-center">
                       <div>
-                        <div className="text-blue-600 font-medium">Income</div>
-                        <div>₦{selectedDayDataForPanel.income.toFixed(2)}</div>
+                        <div className=" font-medium">Income</div>
+                        <div className="text-green-600">
+                          ₦{selectedDayDataForPanel.income.toFixed(2)}
+                        </div>
                       </div>
                       <div>
-                        <div className="text-red-600 font-medium">Expense</div>
-                        <div>₦{selectedDayDataForPanel.expense.toFixed(2)}</div>
+                        <div className="font-medium">Expense</div>
+                        <div className="text-red-600">
+                          ₦{selectedDayDataForPanel.expense.toFixed(2)}
+                        </div>
                       </div>
                       <div>
-                        <div className="font-medium">Total</div>
+                        <div className="font-medium">Balance</div>
                         <div
                           className={
                             selectedDayDataForPanel.balance >= 0
@@ -263,11 +257,12 @@ export default function CalendarPage() {
                               : "text-red-600"
                           }
                         >
-                          ₦{selectedDayDataForPanel.balance.toFixed(2)}
+                          ₦
+                          {Math.abs(selectedDayDataForPanel.balance).toFixed(2)}
                         </div>
                       </div>
                     </div>
-                    {/* Transactions */}
+
                     <div className="space-y-3">
                       {selectedDayDataForPanel.transactions.map(
                         (transaction: Transaction) => (
@@ -310,7 +305,8 @@ export default function CalendarPage() {
             </div>
           )}
         </div>
-        {/* Floating Add Button (always visible unless form is open) */}
+
+        {/* Floating Button */}
         {!showForm && (
           <Button
             onClick={handleFloatingButtonClick}
@@ -320,7 +316,8 @@ export default function CalendarPage() {
             <Plus className="h-6 w-6" />
           </Button>
         )}
-        {/* Transaction Form Modal (full screen overlay) */}
+
+        {/* Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
             <div className="p-4">

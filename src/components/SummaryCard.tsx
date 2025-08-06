@@ -95,9 +95,9 @@ export function SummaryCards() {
           value={summary.balance}
           icon={<Wallet className="h-4 w-4 text-blue" />}
           loading={loading}
-          colorClass="text-black-600"
+          // colorClass="text-black-600"
 
-          // colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
+          colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <SummaryCard
           title="Income"

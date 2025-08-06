@@ -95,7 +95,7 @@ function TransactionItem({
               isIncome ? "text-green-600" : "text-red-600"
             } group-hover:-translate-x-2`}
           >
-            {isIncome ? "+" : "-"}₦{transaction.amount.toFixed(2)}
+            ₦{transaction.amount.toFixed(2)}
           </div>
           <div className="md:opacity-0 md:group-hover:opacity-100 md:mr-2 transition-opacity duration-200">
             <Button
@@ -208,8 +208,8 @@ function TransactionGroup({
         </div>
         <div className="flex justify-end">
           <div className="text-xs font-semibold space-x-3">
-            <span className="text-green-600">+₦{totalIncome.toFixed(2)}</span>
-            <span className="text-red-600">-₦{totalExpense.toFixed(2)}</span>
+            <span className="text-green-600">₦{totalIncome.toFixed(2)}</span>
+            <span className="text-red-600">₦{totalExpense.toFixed(2)}</span>
           </div>
         </div>
       </div>
