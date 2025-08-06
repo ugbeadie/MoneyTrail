@@ -303,8 +303,7 @@ export default function CalendarPage() {
                                     : "text-red-600"
                                 }`}
                               >
-                                {transaction.type === "income" ? "+" : "-"}₦
-                                {transaction.amount.toFixed(2)}
+                                ₦{transaction.amount.toFixed(2)}
                               </div>
                             </div>
                           </div>
