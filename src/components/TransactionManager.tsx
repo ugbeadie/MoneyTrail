@@ -16,9 +16,11 @@ export default function TransactionManager({}: TransactionManagerProps) {
   const [showMobileForm, setShowMobileForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const refresh = () => setRefreshKey((prev) => prev + 1);
+
   // Handle refresh
   const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
+    refresh();
   };
   // Handle editing a transaction
   const handleEdit = (transaction: Transaction) => {
@@ -30,7 +32,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
   const handleTransactionSaved = () => {
     setEditingTransaction(null);
     setShowMobileForm(false); // Hide form on mobile after saving
-    setRefreshKey((prev) => prev + 1); // Refresh list and summary
+    refresh();
   };
 
   // Handle cancel edit

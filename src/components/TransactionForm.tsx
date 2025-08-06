@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,7 @@ export default function TransactionForm({
   const isEditing = !!editingTransaction;
 
   // Get categories based on current type
-  const categories = React.useMemo(() => {
+  const categories = useMemo(() => {
     const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
     return cats;
   }, [type]);
