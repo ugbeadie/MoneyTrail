@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Select,
-  SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import type { Transaction } from "@/types/transaction";
@@ -51,77 +51,64 @@ export default function TransactionCalendar({
   const calendarRef = useRef<FullCalendar>(null);
   const { selectedMonthIndex, setSelectedMonth, selectedMonth } = useMonth();
 
-  const fetchCalendarData = async (month: number, year: number) => {
-    try {
-      setLoading(true);
-      const transactions = await getTransactionsByMonth(month, year);
-      const grouped: { [key: string]: DayData } = {};
-
-      transactions.forEach((transaction) => {
-        const transactionDate = new Date(transaction.date);
-        const localYear = transactionDate.getFullYear();
-        const localMonth = transactionDate.getMonth();
-        const localDay = transactionDate.getDate();
-        const dateStr = formatDateForKey(
-          new Date(localYear, localMonth, localDay)
-        );
-
-        if (!grouped[dateStr]) {
-          grouped[dateStr] = {
-            date: dateStr,
-            income: 0,
-            expense: 0,
-            balance: 0,
-            transactions: [],
-          };
-        }
-
-        grouped[dateStr].transactions.push(transaction);
-        if (transaction.type === "income") {
-          grouped[dateStr].income += transaction.amount;
-        } else {
-          grouped[dateStr].expense += transaction.amount;
-        }
-
-        grouped[dateStr].balance =
-          grouped[dateStr].income - grouped[dateStr].expense;
-      });
-
-      setDayData(grouped);
-    } catch (error) {
-      console.error("Failed to fetch calendar data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCalendarData(selectedMonthIndex, currentYear);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const transactions = await getTransactionsByMonth(
+          selectedMonthIndex,
+          currentYear
+        );
+        const grouped: { [key: string]: DayData } = {};
+
+        transactions.forEach((transaction) => {
+          const localDate = new Date(transaction.date);
+          const dateStr = formatDateForKey(localDate);
+          if (!grouped[dateStr]) {
+            grouped[dateStr] = {
+              date: dateStr,
+              income: 0,
+              expense: 0,
+              balance: 0,
+              transactions: [],
+            };
+          }
+          grouped[dateStr].transactions.push(transaction);
+          if (transaction.type === "income") {
+            grouped[dateStr].income += transaction.amount;
+          } else {
+            grouped[dateStr].expense += transaction.amount;
+          }
+          grouped[dateStr].balance =
+            grouped[dateStr].income - grouped[dateStr].expense;
+        });
+
+        setDayData(grouped);
+      } catch (error) {
+        console.error("Calendar fetch failed:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
 
     if (calendarRef.current) {
-      const calendarApi = calendarRef.current.getApi();
-      calendarApi.gotoDate(new Date(currentYear, selectedMonthIndex, 1));
+      calendarRef.current
+        .getApi()
+        .gotoDate(new Date(currentYear, selectedMonthIndex, 1));
     }
   }, [selectedMonthIndex, currentYear]);
 
-  const handleMonthChange = (monthName: string) => {
-    setSelectedMonth(monthName);
-  };
-
+  const handleMonthChange = (month: string) => setSelectedMonth(month);
   const handleTodayClick = () => {
     const today = new Date();
-    const todayMonth = months[today.getMonth()];
-    const todayYear = today.getFullYear();
-
-    setSelectedMonth(todayMonth);
-    setCurrentYear(todayYear);
+    setSelectedMonth(months[today.getMonth()]);
+    setCurrentYear(today.getFullYear());
   };
-
   const handleDayClick = (info: any) => {
-    const clickedDate = new Date(info.date);
-    const dateStr = formatDateForKey(clickedDate);
-    const data = dayData[dateStr] || null;
-    onDaySelected(dateStr, data);
+    const dateStr = formatDateForKey(new Date(info.date));
+    onDaySelected(dateStr, dayData[dateStr] || null);
   };
 
   return (
@@ -140,12 +127,7 @@ export default function TransactionCalendar({
               ))}
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            className="max-w-22 cursor-pointer"
-            onClick={handleTodayClick}
-          >
+          <Button variant="outline" size="sm" onClick={handleTodayClick}>
             Today
           </Button>
         </div>
@@ -166,24 +148,20 @@ export default function TransactionCalendar({
             height="auto"
             headerToolbar={false}
             dayMaxEvents={false}
-            moreLinkClick="popover"
             dayHeaderFormat={{ weekday: "short" }}
             dayCellClassNames={(info) => {
-              const cellDate = new Date(info.date);
-              const dateStr = formatDateForKey(cellDate);
-              const data = dayData[dateStr];
-              return data ? "has-transactions" : "";
+              const dateStr = formatDateForKey(new Date(info.date));
+              return dayData[dateStr] ? "has-transactions" : "";
             }}
             dayCellContent={(info) => {
-              const cellDate = new Date(info.date);
-              const dateStr = formatDateForKey(cellDate);
+              const dateStr = formatDateForKey(new Date(info.date));
               const data = dayData[dateStr];
-              const dayNumber = info.dayNumberText;
-
               return (
                 <div className="fc-daygrid-day-frame">
                   <div className="fc-daygrid-day-top">
-                    <div className="fc-daygrid-day-number">{dayNumber}</div>
+                    <div className="fc-daygrid-day-number">
+                      {info.dayNumberText}
+                    </div>
                   </div>
                   {data && (
                     <div className="fc-daygrid-day-events">
@@ -224,17 +202,14 @@ export default function TransactionCalendar({
           min-height: 80px;
           position: relative;
         }
-
         .fc-daygrid-day-top {
           display: flex;
           justify-content: flex-start;
         }
-
         .fc-daygrid-day-number {
           padding: 4px;
           font-weight: bold;
         }
-
         .fc-daygrid-day-events {
           position: absolute;
           top: 25px;
@@ -243,52 +218,33 @@ export default function TransactionCalendar({
           bottom: 0;
           overflow: hidden;
         }
-
         .transaction-summary {
           font-size: 10px;
           line-height: 1.2;
         }
-
         .has-transactions {
           background-color: #f8f9fa;
         }
-
         .fc-daygrid-day:hover {
           background-color: #e9ecef;
           cursor: pointer;
         }
-
         .dark .fc-daygrid-day-number {
           color: hsl(var(--foreground));
         }
-
         .dark .fc-col-header-cell {
           color: hsl(var(--foreground));
         }
-
-        .dark .fc-daygrid-day {
-          border-color: hsl(var(--border));
-        }
-
-        .dark .fc-scrollgrid {
-          border-color: hsl(var(--border));
-        }
-
-        .dark .has-transactions {
-          background-color: hsl(var(--muted));
-        }
-
+        .dark .fc-daygrid-day,
+        .dark .fc-scrollgrid,
+        .dark .has-transactions,
         .dark .fc-daygrid-day:hover {
+          border-color: hsl(var(--border));
           background-color: hsl(var(--muted));
         }
-
         .fc-col-header-cell {
           background-color: hsl(var(--muted));
           font-weight: 600;
-        }
-
-        .dark .fc-col-header-cell {
-          background-color: hsl(var(--muted));
         }
       `}</style>
     </Card>

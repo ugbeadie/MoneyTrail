@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, X, ArrowLeft } from "lucide-react";
@@ -52,6 +51,7 @@ export default function CalendarPage() {
     setSelectedDateForPanel(dateStr);
     setSelectedDayDataForPanel(dayData);
     setShowCalendarPanel(true);
+    setShowForm(false); // Close form if open
   };
 
   const handleCloseCalendarPanel = () => {
@@ -80,7 +80,7 @@ export default function CalendarPage() {
         <div className="hidden md:flex gap-4 mt-6 h-[calc(100vh-200px)]">
           <div
             className={`transition-all duration-300 ${
-              showCalendarPanel ? "w-2/3" : "w-full"
+              showCalendarPanel || showForm ? "w-2/3" : "w-full"
             }`}
           >
             <TransactionCalendar
@@ -91,7 +91,8 @@ export default function CalendarPage() {
             />
           </div>
 
-          {showCalendarPanel && (
+          {/* Desktop Side Panel - Day Details */}
+          {showCalendarPanel && !showForm && (
             <div className="w-1/3 transition-all duration-300">
               <div className="h-full flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm">
                 <div className="flex items-center justify-between p-4 border-b">
@@ -156,9 +157,9 @@ export default function CalendarPage() {
                               className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                               onClick={() => handleEditTransaction(transaction)}
                             >
-                              <div className="flex justify-between items-start">
+                              <div className="flex justify-between items-center">
                                 <div className="flex-1">
-                                  <div className="font-medium">
+                                  <div className="font-medium text-sm">
                                     {transaction.description}
                                   </div>
                                   <div className="text-sm text-muted-foreground">
@@ -166,14 +167,13 @@ export default function CalendarPage() {
                                   </div>
                                 </div>
                                 <div
-                                  className={`font-medium ${
+                                  className={`font-medium text-sm ${
                                     transaction.type === "income"
                                       ? "text-green-600"
                                       : "text-red-600"
                                   }`}
                                 >
-                                  {transaction.type === "income" ? "+" : "-"}₦
-                                  {transaction.amount.toFixed(2)}
+                                  ₦{transaction.amount.toFixed(2)}
                                 </div>
                               </div>
                             </div>
@@ -190,11 +190,27 @@ export default function CalendarPage() {
               </div>
             </div>
           )}
+
+          {/* Desktop Side Panel - Transaction Form */}
+          {showForm && (
+            <div className="w-1/3 transition-all duration-300">
+              <div className="h-full flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm">
+                <div className="flex-1 overflow-y-auto p-4">
+                  <TransactionForm
+                    editingTransaction={editingTransaction}
+                    onTransactionSaved={handleTransactionSaved}
+                    onCancelEdit={handleCancelForm}
+                    // isInPanel={true} // Pass this prop to indicate it's in a panel
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mobile Layout */}
         <div className="md:hidden mt-6">
-          {!showCalendarPanel && (
+          {!showCalendarPanel && !showForm && (
             <TransactionCalendar
               key={`calendar-mobile-${refreshKey}`}
               onDaySelected={openDayDetailsPanel}
@@ -202,7 +218,9 @@ export default function CalendarPage() {
               onEditTransaction={handleEditTransaction}
             />
           )}
-          {showCalendarPanel && (
+
+          {/* Mobile Panel - Day Details */}
+          {showCalendarPanel && !showForm && (
             <div className="fixed inset-0 bg-background z-50 flex flex-col">
               <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-2">
@@ -231,7 +249,6 @@ export default function CalendarPage() {
                   Close
                 </Button>
               </div>
-
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {selectedDayDataForPanel ? (
                   <>
@@ -262,7 +279,6 @@ export default function CalendarPage() {
                         </div>
                       </div>
                     </div>
-
                     <div className="space-y-3">
                       {selectedDayDataForPanel.transactions.map(
                         (transaction: Transaction) => (
@@ -304,6 +320,19 @@ export default function CalendarPage() {
               </div>
             </div>
           )}
+
+          {/* Mobile Form Modal */}
+          {showForm && (
+            <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+              <div className="p-4">
+                <TransactionForm
+                  editingTransaction={editingTransaction}
+                  onTransactionSaved={handleTransactionSaved}
+                  onCancelEdit={handleCancelForm}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Floating Button */}
@@ -315,19 +344,6 @@ export default function CalendarPage() {
           >
             <Plus className="h-6 w-6" />
           </Button>
-        )}
-
-        {/* Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
-            <div className="p-4">
-              <TransactionForm
-                editingTransaction={editingTransaction}
-                onTransactionSaved={handleTransactionSaved}
-                onCancelEdit={handleCancelForm}
-              />
-            </div>
-          </div>
         )}
       </div>
     </MonthProvider>
