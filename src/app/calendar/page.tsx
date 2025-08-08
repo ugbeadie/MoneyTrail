@@ -77,7 +77,7 @@ export default function CalendarPage() {
         <SummaryCards key={`summary-${refreshKey}`} />
 
         {/* Desktop Layout */}
-        <div className="hidden md:flex gap-4 mt-6 h-[calc(100vh-200px)]">
+        <div className="hidden md:flex gap-4 mt-4 h-[calc(100vh-200px)]">
           <div
             className={`transition-all duration-300 ${
               showCalendarPanel || showForm ? "w-2/3" : "w-full"
