@@ -35,8 +35,16 @@ export default function TransactionForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const isEditing = !!editingTransaction;
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // run once on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   //convert the date to a local date string formatted as YYYY-MM-DD
   function getLocalDateISO(): string {
@@ -179,15 +187,17 @@ export default function TransactionForm({
           <CardTitle className="text-xl font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
           </CardTitle>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            className="cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </Button>
+          {(isMobile || isEditing) && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
         <p className="text-muted-foreground text-sm">
           {isEditing
@@ -330,15 +340,17 @@ export default function TransactionForm({
                 ? `${isEditing ? "Updating" : "Saving"}...`
                 : `${isEditing ? "Update" : "Save"} Transaction`}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="cursor-pointer bg-transparent"
-            >
-              Cancel
-            </Button>
+            {(isMobile || isEditing) && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="cursor-pointer bg-transparent"
+              >
+                Cancel
+              </Button>
+            )}
           </div>
         </form>
       </CardContent>

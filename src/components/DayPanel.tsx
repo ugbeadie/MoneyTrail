@@ -97,7 +97,9 @@ export function DayPanel({
               </div>
 
               {/* Transactions */}
-              <div className={isMobile ? "space-y-3" : "space-y-2"}>
+              <div
+                className={isMobile ? "space-y-3 text-sm" : "space-y-2 text-sm"}
+              >
                 {dayData.transactions.map((transaction) => (
                   <TransactionItem
                     key={transaction.id}
