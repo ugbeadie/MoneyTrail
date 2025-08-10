@@ -2,13 +2,12 @@
 
 import type { DayData } from "./TransactionCalendar";
 
-export function CalendarCell({
-  dayNumber,
-  data,
-}: {
+interface CalendarCellProp {
   dayNumber: string;
   data?: DayData;
-}) {
+}
+
+export function CalendarCell({ dayNumber, data }: CalendarCellProp) {
   return (
     <div className="fc-daygrid-day-frame">
       <div className="fc-daygrid-day-top">

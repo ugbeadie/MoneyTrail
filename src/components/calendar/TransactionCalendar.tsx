@@ -190,62 +190,6 @@ export default function TransactionCalendar({
           )}
         </div>
       </CardContent>
-
-      <style jsx global>{`
-        .fc-daygrid-day-frame {
-          min-height: 80px;
-          position: relative;
-        }
-        .fc-daygrid-day-top {
-          display: flex;
-          justify-content: flex-start;
-        }
-        .fc-daygrid-day-number {
-          padding: 4px;
-          font-weight: bold;
-        }
-        .fc-daygrid-day-events {
-          position: absolute;
-          top: 25px;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          overflow: hidden;
-        }
-        .transaction-summary {
-          font-size: 10px;
-          line-height: 1.2;
-        }
-        .has-transactions {
-          background-color: #f8f9fa;
-        }
-        .fc-daygrid-day:hover {
-          background-color: #e9ecef;
-          cursor: pointer;
-        }
-        .dark .fc-daygrid-day-number {
-          color: hsl(var(--foreground));
-        }
-        .dark .fc-col-header-cell {
-          background-color: var(--background);
-        }
-        .dark .fc-daygrid-day {
-          border-color: hsl(var(--border));
-        }
-        .dark .fc-scrollgrid {
-          border-color: hsl(var(--border));
-        }
-        .dark .has-transactions {
-          background-color: hsl(var(--muted));
-        }
-        .dark .fc-daygrid-day:hover {
-          background-color: hsl(var(--muted));
-        }
-        .fc-col-header-cell {
-          background-color: hsl(var(--muted));
-          font-weight: 600;
-        }
-      `}</style>
     </Card>
   );
 }

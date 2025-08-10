@@ -83,7 +83,7 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
 
   // Group and sort transactions
   const groupedTransactions = transactions.reduce(
-    (groups: { [key: string]: Transaction[] }, transaction) => {
+    (groups: Record<string, Transaction[]>, transaction) => {
       const date = transaction.date.toISOString().split("T")[0];
       if (!groups[date]) {
         groups[date] = [];
