@@ -18,6 +18,7 @@ import type { Transaction } from "@/types/transaction";
 import { getTransactionsByMonth } from "@/lib/actions";
 import { useMonth } from "@/contexts/MonthContext";
 import { months } from "@/lib/constants";
+import { CalendarCell } from "./CalendarCell";
 
 export interface DayData {
   date: string;
@@ -29,8 +30,6 @@ export interface DayData {
 
 interface TransactionCalendarProps {
   onDaySelected: (dateStr: string, dayData: DayData | null) => void;
-  onAddTransaction: () => void;
-  onEditTransaction: (transaction: Transaction) => void;
 }
 
 const formatDateForKey = (date: Date): string => {
@@ -42,18 +41,11 @@ const formatDateForKey = (date: Date): string => {
 
 const processTransactions = (
   transactions: Transaction[]
-): { [key: string]: DayData } => {
-  const grouped: { [key: string]: DayData } = {};
+): Record<string, DayData> => {
+  const grouped: Record<string, DayData> = {};
 
   transactions.forEach((transaction) => {
-    const transactionDate = new Date(transaction.date);
-    const dateStr = formatDateForKey(
-      new Date(
-        transactionDate.getFullYear(),
-        transactionDate.getMonth(),
-        transactionDate.getDate()
-      )
-    );
+    const dateStr = formatDateForKey(new Date(transaction.date));
 
     if (!grouped[dateStr]) {
       grouped[dateStr] = {
@@ -66,12 +58,9 @@ const processTransactions = (
     }
 
     grouped[dateStr].transactions.push(transaction);
-
-    if (transaction.type === "income") {
-      grouped[dateStr].income += transaction.amount;
-    } else {
-      grouped[dateStr].expense += transaction.amount;
-    }
+    transaction.type === "income"
+      ? (grouped[dateStr].income += transaction.amount)
+      : (grouped[dateStr].expense += transaction.amount);
 
     grouped[dateStr].balance =
       grouped[dateStr].income - grouped[dateStr].expense;
@@ -79,54 +68,10 @@ const processTransactions = (
 
   return grouped;
 };
-
-const CalendarCell = ({
-  dayNumber,
-  data,
-}: {
-  dayNumber: string;
-  data?: DayData;
-}) => (
-  <div className="fc-daygrid-day-frame">
-    <div className="fc-daygrid-day-top">
-      <div className="fc-daygrid-day-number">{dayNumber}</div>
-    </div>
-    {data && (
-      <div className="fc-daygrid-day-events">
-        <div className="transaction-summary p-1 text-xs space-y-1">
-          {data.income > 0 && (
-            <div className="text-green-600 font-medium lg:text-sm">
-              ₦{data.income.toLocaleString()}
-            </div>
-          )}
-          {data.expense > 0 && (
-            <div className="text-red-600 font-medium lg:text-sm">
-              ₦{data.expense.toLocaleString()}
-            </div>
-          )}
-          <div
-            className={`font-bold lg:text-sm ${
-              data.balance > 0
-                ? "text-green-600"
-                : data.balance < 0
-                ? "text-red-600"
-                : "text-gray-500"
-            }`}
-          >
-            ₦{Math.abs(data.balance).toLocaleString()}
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-);
-
 export default function TransactionCalendar({
   onDaySelected,
-  onAddTransaction,
-  onEditTransaction,
 }: TransactionCalendarProps) {
-  const [dayData, setDayData] = useState<{ [key: string]: DayData }>({});
+  const [dayData, setDayData] = useState<Record<string, DayData>>({});
   const [loading, setLoading] = useState(true);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const calendarRef = useRef<FullCalendar>(null);
@@ -180,7 +125,7 @@ export default function TransactionCalendar({
   }, []);
 
   return (
-    <Card className="h-full flex flex-col mb-8 border-0 shadow-none">
+    <Card className="h-full flex flex-col mb-8 border-0 shadow-none bg-transparent">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
@@ -227,10 +172,11 @@ export default function TransactionCalendar({
               dayMaxEvents={false}
               moreLinkClick="popover"
               dayHeaderFormat={{ weekday: "short" }}
-              dayCellClassNames={(info) => {
-                const dateStr = formatDateForKey(new Date(info.date));
-                return dayData[dateStr] ? "has-transactions" : "";
-              }}
+              dayCellClassNames={(info) =>
+                dayData[formatDateForKey(new Date(info.date))]
+                  ? "has-transactions"
+                  : ""
+              }
               dayCellContent={(info) => {
                 const dateStr = formatDateForKey(new Date(info.date));
                 return (
@@ -245,7 +191,6 @@ export default function TransactionCalendar({
         </div>
       </CardContent>
 
-      {/* Custom CSS for calendar styling */}
       <style jsx global>{`
         .fc-daygrid-day-frame {
           min-height: 80px;
@@ -278,12 +223,11 @@ export default function TransactionCalendar({
           background-color: #e9ecef;
           cursor: pointer;
         }
-        /* Dark mode fixes */
         .dark .fc-daygrid-day-number {
           color: hsl(var(--foreground));
         }
         .dark .fc-col-header-cell {
-          color: hsl(var(--foreground));
+          background-color: var(--background);
         }
         .dark .fc-daygrid-day {
           border-color: hsl(var(--border));
@@ -297,13 +241,9 @@ export default function TransactionCalendar({
         .dark .fc-daygrid-day:hover {
           background-color: hsl(var(--muted));
         }
-        /* Day header styling */
         .fc-col-header-cell {
           background-color: hsl(var(--muted));
           font-weight: 600;
-        }
-        .dark .fc-col-header-cell {
-          background-color: hsl(var(--muted));
         }
       `}</style>
     </Card>

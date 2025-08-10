@@ -120,8 +120,6 @@ export default function CalendarPage() {
             <TransactionCalendar
               key={`calendar-${refreshKey}`}
               onDaySelected={openDayDetailsPanel}
-              onAddTransaction={handleFloatingButtonClick}
-              onEditTransaction={handleEditTransaction}
             />
           </div>
 
@@ -157,8 +155,6 @@ export default function CalendarPage() {
             <TransactionCalendar
               key={`calendar-mobile-${refreshKey}`}
               onDaySelected={openDayDetailsPanel}
-              onAddTransaction={handleFloatingButtonClick}
-              onEditTransaction={handleEditTransaction}
             />
           )}
 
