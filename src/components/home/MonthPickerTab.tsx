@@ -1,6 +1,6 @@
 "use client";
 
-import { MonthPicker } from "@/components/MonthPicker";
+import { MonthPicker } from "./MonthPicker";
 import { useMonth } from "@/contexts/MonthContext";
 
 export function MonthPickerTab() {

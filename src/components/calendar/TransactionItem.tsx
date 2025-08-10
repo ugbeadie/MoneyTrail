@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import { DeleteTransactionModal } from "@/components/DeleteTransModal";
+import { DeleteTransactionModal } from "../shared/DeleteTransModal";
 interface TransactionItemProps {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;

@@ -2,10 +2,10 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { Header } from "@/components/header";
+import { Header } from "@/components/shared/header";
 import { Lato } from "next/font/google";
 // import { Toaster } from "sonner";
-import { ToasterProvider } from "@/components/ToasterProvider";
+import { ToasterProvider } from "@/components/shared/ToasterProvider";
 
 const lato = Lato({
   weight: "400",

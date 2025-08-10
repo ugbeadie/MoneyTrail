@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { X, ArrowLeft } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import type { DayData } from "@/components/TransactionCalendar";
+import type { DayData } from "@/components/calendar/TransactionCalendar";
 import { TransactionItem } from "./TransactionItem";
 
 interface DayPanelProps {

@@ -187,17 +187,16 @@ export default function TransactionForm({
           <CardTitle className="text-xl font-semibold">
             {isEditing ? "Edit Transaction" : "Add Transaction"}
           </CardTitle>
-          {(isMobile || isEditing) && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            className="cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </div>
         <p className="text-muted-foreground text-sm">
           {isEditing
@@ -340,17 +339,15 @@ export default function TransactionForm({
                 ? `${isEditing ? "Updating" : "Saving"}...`
                 : `${isEditing ? "Update" : "Save"} Transaction`}
             </Button>
-            {(isMobile || isEditing) && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="cursor-pointer bg-transparent"
-              >
-                Cancel
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="cursor-pointer bg-transparent"
+            >
+              Cancel
+            </Button>
           </div>
         </form>
       </CardContent>

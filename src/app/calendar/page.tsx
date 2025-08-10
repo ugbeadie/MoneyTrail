@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import { SummaryCards } from "@/components/SummaryCard";
-import TransactionForm from "@/components/TransactionForm";
-import TransactionCalendar from "@/components/TransactionCalendar";
-import type { DayData } from "@/components/TransactionCalendar";
+import { SummaryCards } from "@/components/shared/SummaryCard";
+import TransactionForm from "@/components/calendar/TransactionForm";
+import TransactionCalendar from "@/components/calendar/TransactionCalendar";
+import type { DayData } from "@/components/calendar/TransactionCalendar";
 import { MonthProvider } from "@/contexts/MonthContext";
-import { DayPanel } from "@/components/DayPanel";
+import { DayPanel } from "@/components/calendar/DayPanel";
 import { deleteTransaction } from "@/lib/actions";
 import { toast } from "sonner";
 

@@ -1,5 +1,5 @@
-import { MonthPickerTab } from "@/components/MonthPickerTab";
-import TransactionManager from "@/components/TransactionManager";
+import { MonthPickerTab } from "@/components/home/MonthPickerTab";
+import TransactionManager from "@/components/home/TransactionManager";
 import { MonthProvider } from "@/contexts/MonthContext";
 
 export default function HomePage() {

@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
-import { SummaryCards } from "./SummaryCard";
-import TransactionForm from "./TransactionForm";
-import TransactionList from "./TransactionList";
+import { SummaryCards } from "../shared/SummaryCard";
+import { TransactionForm } from "./TransactionForm";
+
+import { TransactionList } from "./TransactionList";
 // import { handleRefresh } from "@/utils/transaction-utils" // Declare or import handleRefresh
 
 type TransactionManagerProps = {};

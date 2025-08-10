@@ -10,7 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "./ui/theme-toggle";
+import { ThemeToggle } from "../ui/theme-toggle";
 
 const navItems = [
   {
