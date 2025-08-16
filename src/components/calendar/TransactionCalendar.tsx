@@ -16,7 +16,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import type { Transaction } from "@/types/transaction";
 import { getTransactionsByMonth } from "@/lib/actions";
-import { useMonth } from "@/contexts/MonthContext";
+import { useCalendar } from "@/contexts/CalendarContext";
 import { months } from "@/lib/constants";
 import { CalendarCell } from "./CalendarCell";
 
@@ -30,6 +30,8 @@ export interface DayData {
 
 interface TransactionCalendarProps {
   onDaySelected: (dateStr: string, dayData: DayData | null) => void;
+  onAddTransaction?: () => void;
+  onEditTransaction?: (transaction: Transaction) => void;
 }
 
 const formatDateForKey = (date: Date): string => {
@@ -68,15 +70,26 @@ const processTransactions = (
 
   return grouped;
 };
+
+// Generate year options (current year ± 5 years)
+const currentYear = new Date().getFullYear();
+const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 export default function TransactionCalendar({
   onDaySelected,
 }: TransactionCalendarProps) {
   const [dayData, setDayData] = useState<Record<string, DayData>>({});
   const [loading, setLoading] = useState(true);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const calendarRef = useRef<FullCalendar>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedMonthIndex, setSelectedMonth, selectedMonth } = useMonth();
+
+  // Use the global calendar context
+  const {
+    selectedMonth,
+    selectedYear,
+    selectedMonthIndex,
+    setSelectedMonth,
+    setSelectedYear,
+  } = useCalendar();
 
   const fetchCalendarData = async (month: number, year: number) => {
     try {
@@ -93,7 +106,7 @@ export default function TransactionCalendar({
   const handleTodayClick = () => {
     const today = new Date();
     setSelectedMonth(months[today.getMonth()]);
-    setCurrentYear(today.getFullYear());
+    setSelectedYear(today.getFullYear());
   };
 
   const handleDayClick = (info: any) => {
@@ -102,15 +115,15 @@ export default function TransactionCalendar({
   };
 
   useEffect(() => {
-    fetchCalendarData(selectedMonthIndex, currentYear);
+    fetchCalendarData(selectedMonthIndex, selectedYear);
 
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
       Promise.resolve().then(() => {
-        calendarApi.gotoDate(new Date(currentYear, selectedMonthIndex, 1));
+        calendarApi.gotoDate(new Date(selectedYear, selectedMonthIndex, 1));
       });
     }
-  }, [selectedMonthIndex, currentYear]);
+  }, [selectedMonthIndex, selectedYear]);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
@@ -125,18 +138,34 @@ export default function TransactionCalendar({
   }, []);
 
   return (
-    <Card className="h-full flex flex-col mb-8 border-0 shadow-none bg-transparent">
+    <Card className="h-full flex flex-col mb-8 border-0 shadow-none bg-transparent py-2 ">
       <CardHeader className="flex-shrink-0">
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-center md:justify-end">
           <div className="flex items-center gap-2">
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="max-w-28 md:w-28 cursor-pointer">
+              <SelectTrigger className="max-w-24 cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {months.map((month) => (
                   <SelectItem key={month} value={month}>
                     {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => setSelectedYear(Number.parseInt(value))}
+            >
+              <SelectTrigger className="max-w-24 cursor-pointer">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -165,7 +194,7 @@ export default function TransactionCalendar({
               ref={calendarRef}
               plugins={[dayGridPlugin, interactionPlugin]}
               initialView="dayGridMonth"
-              initialDate={new Date(currentYear, selectedMonthIndex, 1)}
+              initialDate={new Date(selectedYear, selectedMonthIndex, 1)}
               dateClick={handleDayClick}
               height="auto"
               headerToolbar={false}

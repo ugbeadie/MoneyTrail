@@ -64,7 +64,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
     <div className="relative">
       <SummaryCards key={`summary-${refreshKey}`} />
       {/* Desktop Layout */}
-      <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-6">
+      <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-6 md:h-[60vh]">
         {/* Transaction List */}
         <div>
           <TransactionList
@@ -75,7 +75,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
         </div>
 
         {/* Transaction Form */}
-        <div>
+        <div className="md:h-[60vh]">
           <TransactionForm
             editingTransaction={editingTransaction}
             onTransactionSaved={handleTransactionSaved}

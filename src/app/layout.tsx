@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Header } from "@/components/shared/header";
 import { Lato } from "next/font/google";
-// import { Toaster } from "sonner";
+import { CalendarProvider } from "@/contexts/CalendarContext";
+import { StatsProvider } from "@/contexts/StatsContext";
 import { ToasterProvider } from "@/components/shared/ToasterProvider";
 
 const lato = Lato({
@@ -31,10 +32,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <main>
-            {children}
-            <ToasterProvider />
-          </main>
+
+          <CalendarProvider>
+            <StatsProvider>{children}</StatsProvider>
+          </CalendarProvider>
+          <ToasterProvider />
         </ThemeProvider>
       </body>
     </html>

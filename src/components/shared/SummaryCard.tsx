@@ -5,9 +5,10 @@ import type React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTransactionSummaryByMonth } from "@/lib/actions";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
-import { useMonth } from "@/contexts/MonthContext";
+import { useCalendar } from "@/contexts/CalendarContext";
 import { Spinner } from "@/components/ui/spinner";
 import type { TransactionSummary } from "@/types/transaction";
+
 interface SummaryCardProps {
   title: string;
   value: number;
@@ -15,6 +16,7 @@ interface SummaryCardProps {
   loading: boolean;
   colorClass: string;
 }
+
 function SummaryCard({
   title,
   value,
@@ -61,22 +63,25 @@ function SummaryCard({
     </>
   );
 }
+
 export function SummaryCards() {
-  const { selectedMonthIndex } = useMonth();
+  // Use the calendar context instead of month context
+  const { selectedMonthIndex, selectedYear } = useCalendar();
   const [summary, setSummary] = useState<TransactionSummary>({
     totalIncome: 0,
     totalExpenses: 0,
     balance: 0,
   });
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchSummary = async () => {
       setLoading(true);
       try {
-        const currentYear = new Date().getFullYear();
+        // Use the selected year from calendar context instead of hardcoded current year
         const data = await getTransactionSummaryByMonth(
           selectedMonthIndex,
-          currentYear
+          selectedYear
         );
         setSummary(data);
       } catch (error) {
@@ -86,7 +91,8 @@ export function SummaryCards() {
       }
     };
     fetchSummary();
-  }, [selectedMonthIndex]);
+  }, [selectedMonthIndex, selectedYear]); // Add selectedYear as dependency
+
   return (
     <div className="w-full">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mt-2 w-full">
@@ -95,8 +101,6 @@ export function SummaryCards() {
           value={summary.balance}
           icon={<Wallet className="h-4 w-4 text-blue" />}
           loading={loading}
-          // colorClass="text-black-600"
-
           colorClass={summary.balance >= 0 ? "text-green-600" : "text-red-600"}
         />
         <SummaryCard

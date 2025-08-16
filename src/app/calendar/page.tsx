@@ -8,7 +8,6 @@ import { SummaryCards } from "@/components/shared/SummaryCard";
 import TransactionForm from "@/components/calendar/TransactionForm";
 import TransactionCalendar from "@/components/calendar/TransactionCalendar";
 import type { DayData } from "@/components/calendar/TransactionCalendar";
-import { MonthProvider } from "@/contexts/MonthContext";
 import { DayPanel } from "@/components/calendar/DayPanel";
 import { deleteTransaction } from "@/lib/actions";
 import { toast } from "sonner";
@@ -104,74 +103,39 @@ export default function CalendarPage() {
   }, [showForm, showCalendarPanel]);
 
   return (
-    <MonthProvider>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <hr className="border-muted" />
-        <h1 className="font-bold text-2xl">Summary</h1>
-        <SummaryCards key={`summary-${refreshKey}`} />
+    <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <hr className="border-muted" />
+      <h1 className="font-bold text-2xl mt-1">Summary</h1>
+      <SummaryCards key={`summary-${refreshKey}`} />
 
-        {/* Desktop Layout */}
-        <div className="hidden md:flex gap-4 mt-4 h-[calc(100vh-200px)]">
-          <div
-            className={`transition-all duration-300 ${
-              showCalendarPanel || showForm ? "w-2/3" : "w-full"
-            }`}
-          >
-            <TransactionCalendar
-              key={`calendar-${refreshKey}`}
-              onDaySelected={openDayDetailsPanel}
-            />
-          </div>
-
-          {/* Desktop Panels */}
-          {showCalendarPanel && !showForm && (
-            <DayPanel
-              selectedDate={selectedDateForPanel}
-              dayData={selectedDayDataForPanel}
-              onClose={() => setShowCalendarPanel(false)}
-              onEdit={handleEditTransaction}
-              onDelete={handleDeleteTransaction}
-            />
-          )}
-
-          {showForm && (
-            <div className="w-1/3 transition-all duration-300">
-              <div className="h-full flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm">
-                <div className="flex-1 overflow-y-auto p-4">
-                  <TransactionForm
-                    editingTransaction={editingTransaction}
-                    onTransactionSaved={handleTransactionSaved}
-                    onCancelEdit={() => setShowForm(false)}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+      {/* Desktop Layout */}
+      <div className="hidden md:flex gap-4 mt-4 h-[calc(100vh-200px)]">
+        <div
+          className={`transition-all duration-300 ${
+            showCalendarPanel || showForm ? "w-2/3" : "w-full"
+          }`}
+        >
+          <TransactionCalendar
+            key={`calendar-${refreshKey}`}
+            onDaySelected={openDayDetailsPanel}
+          />
         </div>
 
-        {/* Mobile Layout */}
-        <div className="md:hidden mt-6">
-          {!showCalendarPanel && !showForm && (
-            <TransactionCalendar
-              key={`calendar-mobile-${refreshKey}`}
-              onDaySelected={openDayDetailsPanel}
-            />
-          )}
+        {/* Desktop Panels */}
+        {showCalendarPanel && !showForm && (
+          <DayPanel
+            selectedDate={selectedDateForPanel}
+            dayData={selectedDayDataForPanel}
+            onClose={() => setShowCalendarPanel(false)}
+            onEdit={handleEditTransaction}
+            onDelete={handleDeleteTransaction}
+          />
+        )}
 
-          {showCalendarPanel && !showForm && (
-            <DayPanel
-              selectedDate={selectedDateForPanel}
-              dayData={selectedDayDataForPanel}
-              onClose={() => setShowCalendarPanel(false)}
-              onEdit={handleEditTransaction}
-              onDelete={handleDeleteTransaction}
-              isMobile
-            />
-          )}
-
-          {showForm && (
-            <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
-              <div className="p-4">
+        {showForm && (
+          <div className="w-1/3 transition-all duration-300">
+            <div className="h-full flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm">
+              <div className="flex-1 overflow-y-auto p-4">
                 <TransactionForm
                   editingTransaction={editingTransaction}
                   onTransactionSaved={handleTransactionSaved}
@@ -179,20 +143,53 @@ export default function CalendarPage() {
                 />
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Floating Button */}
-        {!showForm && (
-          <Button
-            onClick={handleFloatingButtonClick}
-            className="fixed bottom-14 right-5 h-12 w-12 rounded-full shadow-lg z-1 cursor-pointer"
-            size="icon"
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
+          </div>
         )}
       </div>
-    </MonthProvider>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden mt-6">
+        {!showCalendarPanel && !showForm && (
+          <TransactionCalendar
+            key={`calendar-mobile-${refreshKey}`}
+            onDaySelected={openDayDetailsPanel}
+          />
+        )}
+
+        {showCalendarPanel && !showForm && (
+          <DayPanel
+            selectedDate={selectedDateForPanel}
+            dayData={selectedDayDataForPanel}
+            onClose={() => setShowCalendarPanel(false)}
+            onEdit={handleEditTransaction}
+            onDelete={handleDeleteTransaction}
+            isMobile
+          />
+        )}
+
+        {showForm && (
+          <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+            <div className="p-4">
+              <TransactionForm
+                editingTransaction={editingTransaction}
+                onTransactionSaved={handleTransactionSaved}
+                onCancelEdit={() => setShowForm(false)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Floating Button */}
+      {!showForm && (
+        <Button
+          onClick={handleFloatingButtonClick}
+          className="fixed bottom-14 right-6 md:bottom-10 md:right-10 h-12 w-12 rounded-full shadow-lg z-1 cursor-pointer"
+          size="icon"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      )}
+    </div>
   );
 }

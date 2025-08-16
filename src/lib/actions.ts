@@ -261,3 +261,179 @@ export async function getTransactionSummaryByMonth(
     return { totalIncome: 0, totalExpenses: 0, balance: 0 };
   }
 }
+//STATS ACTIONS
+
+export interface CategoryStats {
+  category: string;
+  amount: number;
+  percentage: number;
+  count: number;
+}
+
+export interface StatsData {
+  totalIncome: number;
+  totalExpenses: number;
+  incomeByCategory: CategoryStats[];
+  expensesByCategory: CategoryStats[];
+  dateRange: string;
+}
+
+export async function getStatsData(
+  period: "weekly" | "monthly" | "annually",
+  month?: number,
+  year?: number
+): Promise<StatsData> {
+  try {
+    let startDate: Date;
+    let endDate: Date;
+    let dateRange: string;
+    const currentYear = year || new Date().getFullYear();
+
+    switch (period) {
+      case "weekly":
+        // Get current week (Sunday to Saturday)
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - dayOfWeek);
+        startDate.setHours(0, 0, 0, 0);
+
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+
+        dateRange = `${startDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })} - ${endDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}`;
+        break;
+
+      case "monthly":
+        const targetMonth = month !== undefined ? month : new Date().getMonth();
+        startDate = new Date(currentYear, targetMonth, 1);
+        endDate = new Date(currentYear, targetMonth + 1, 0, 23, 59, 59, 999);
+
+        const monthNames = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        dateRange = `${monthNames[targetMonth]} ${currentYear}`;
+        break;
+
+      case "annually":
+        startDate = new Date(currentYear, 0, 1);
+        endDate = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+        dateRange = `${currentYear}`;
+        break;
+    }
+
+    // Convert to UTC for database query
+    const utcStartDate = new Date(
+      Date.UTC(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate(),
+        0,
+        0,
+        0,
+        0
+      )
+    );
+    const utcEndDate = new Date(
+      Date.UTC(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        endDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    );
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        date: {
+          gte: utcStartDate,
+          lte: utcEndDate,
+        },
+      },
+    });
+
+    const incomeTransactions = transactions.filter((t) => t.type === "income");
+    const expenseTransactions = transactions.filter(
+      (t) => t.type === "expense"
+    );
+
+    const totalIncome = incomeTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0
+    );
+    const totalExpenses = expenseTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0
+    );
+
+    // Group by category and calculate stats
+    const incomeByCategory = groupByCategory(incomeTransactions, totalIncome);
+    const expensesByCategory = groupByCategory(
+      expenseTransactions,
+      totalExpenses
+    );
+
+    return {
+      totalIncome,
+      totalExpenses,
+      incomeByCategory,
+      expensesByCategory,
+      dateRange,
+    };
+  } catch (error) {
+    console.error("Error fetching stats data:", error);
+    return {
+      totalIncome: 0,
+      totalExpenses: 0,
+      incomeByCategory: [],
+      expensesByCategory: [],
+      dateRange: "",
+    };
+  }
+}
+
+function groupByCategory(transactions: any[], total: number): CategoryStats[] {
+  const categoryMap = new Map<string, { amount: number; count: number }>();
+
+  transactions.forEach((transaction) => {
+    // Simply use the category as-is
+    const category = transaction.category;
+
+    const existing = categoryMap.get(category) || { amount: 0, count: 0 };
+    categoryMap.set(category, {
+      amount: existing.amount + transaction.amount,
+      count: existing.count + 1,
+    });
+  });
+
+  return Array.from(categoryMap.entries())
+    .map(([category, data]) => ({
+      category,
+      amount: data.amount,
+      percentage: total > 0 ? (data.amount / total) * 100 : 0,
+      count: data.count,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+}

@@ -109,7 +109,7 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
   const totalExpenses = transactions.filter((t) => t.type === "expense").length;
 
   return (
-    <div className="h-[600px] flex flex-col">
+    <div className="md:h-[60vh] flex flex-col">
       <div className="flex-shrink-0">
         <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
         <p className="text-muted-foreground text-sm mb-6">

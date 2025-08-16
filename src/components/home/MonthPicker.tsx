@@ -1,12 +1,11 @@
 "use client";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { months } from "@/lib/constants";
 
 interface MonthPickerProps {
@@ -16,27 +15,17 @@ interface MonthPickerProps {
 
 export function MonthPicker({ selectedMonth, onSelect }: MonthPickerProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex items-center gap-1 text-foreground hover:bg-transparent p-0 cursor-pointer"
-        >
-          {selectedMonth}
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-32">
+    <Select value={selectedMonth} onValueChange={onSelect}>
+      <SelectTrigger className="max-w-24 cursor-pointer">
+        <SelectValue placeholder="Select month" />
+      </SelectTrigger>
+      <SelectContent>
         {months.map((month) => (
-          <DropdownMenuItem
-            key={month}
-            onClick={() => onSelect(month)}
-            className="cursor-pointer"
-          >
+          <SelectItem key={month} value={month} className="cursor-pointer">
             {month}
-          </DropdownMenuItem>
+          </SelectItem>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </SelectContent>
+    </Select>
   );
 }
