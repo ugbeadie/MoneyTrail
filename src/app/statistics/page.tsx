@@ -321,8 +321,8 @@ function StatsContent({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Chart */}
-      <Card>
-        <CardHeader>
+      <Card className="border-none shadow-none bg-transparent">
+        <CardHeader className="px-0">
           <h3
             className={`text-lg font-semibold capitalize ${
               type === "income" ? "text-green-600" : "text-red-600"
@@ -331,7 +331,7 @@ function StatsContent({
             {type} by Category
           </h3>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           <TransactionChart
             data={data}
             type={type}
