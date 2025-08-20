@@ -2,10 +2,12 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { CategoryStats } from "@/lib/actions";
+import { useEffect, useState } from "react";
 
 interface StatsChartProps {
   data: CategoryStats[];
   type: "income" | "expense";
+  onCategoryClick?: (category: string) => void;
 }
 
 // Color palette matching the image
@@ -22,12 +24,82 @@ const COLORS = [
   "#84cc16", // lime
 ];
 
-export function StatsChart({ data, type }: StatsChartProps) {
+export function TransactionChart({
+  data,
+  type,
+  onCategoryClick,
+}: StatsChartProps) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [containerDimensions, setContainerDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      const container = document.querySelector(".chart-container");
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        setContainerDimensions({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
   const chartData = data.map((item, index) => ({
     ...item,
     displayCategory: item.category,
     color: COLORS[index % COLORS.length],
   }));
+
+  // Calculate cumulative angles for proper line alignment
+  let cumulativeAngle = 0;
+  const segmentData = chartData.map((item) => {
+    const startAngle = cumulativeAngle;
+    const endAngle = cumulativeAngle + (item.percentage / 100) * 360;
+    const midAngle = (startAngle + endAngle) / 2;
+    cumulativeAngle = endAngle;
+
+    return {
+      ...item,
+      startAngle,
+      endAngle,
+      midAngle,
+    };
+  });
+
+  const chartSettings = {
+    mobile: {
+      outerRadius: Math.min(containerDimensions.width * 0.25, 80),
+      margin: { top: 20, right: 60, bottom: 20, left: 60 },
+      fontSize: { internal: 10, external: 9 },
+      threshold: 0.1,
+      labelSpacing: 25,
+    },
+    desktop: {
+      outerRadius: Math.min(containerDimensions.width * 0.3, 140),
+      margin: { top: 30, right: 120, bottom: 30, left: 120 },
+      fontSize: { internal: 12, external: 11 },
+      threshold: 0.1,
+      labelSpacing: 35,
+    },
+  };
+
+  const settings = isMobile ? chartSettings.mobile : chartSettings.desktop;
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -44,6 +116,83 @@ export function StatsChart({ data, type }: StatsChartProps) {
     return null;
   };
 
+  const calculateExternalLabelPositions = (
+    segments: any[],
+    actualCx: number,
+    actualCy: number
+  ) => {
+    const externalSegments = segments.filter(
+      (seg) => seg.percentage / 100 < settings.threshold
+    );
+    const positions: any[] = [];
+
+    // Separate left and right side segments
+    const leftSide: any[] = [];
+    const rightSide: any[] = [];
+
+    externalSegments.forEach((seg) => {
+      const RADIAN = Math.PI / 180;
+      const midAngle = seg.midAngle;
+      const bendRadius = settings.outerRadius + (isMobile ? 15 : 25);
+      const bendPoint = {
+        x: actualCx + bendRadius * Math.cos(-midAngle * RADIAN),
+        y: actualCy + bendRadius * Math.sin(-midAngle * RADIAN),
+      };
+
+      if (bendPoint.x > actualCx) {
+        rightSide.push({ ...seg, bendPoint });
+      } else {
+        leftSide.push({ ...seg, bendPoint });
+      }
+    });
+
+    // Sort by y position to stack them properly
+    leftSide.sort((a, b) => a.bendPoint.y - b.bendPoint.y);
+    rightSide.sort((a, b) => a.bendPoint.y - b.bendPoint.y);
+
+    // Calculate positions with proper spacing
+    const calculateSidePositions = (
+      sideSegments: any[],
+      isRightSide: boolean
+    ) => {
+      return sideSegments.map((seg, i) => {
+        const baseY = seg.bendPoint.y;
+        const adjustedY =
+          i === 0
+            ? baseY
+            : Math.max(
+                baseY,
+                positions[positions.length - 1]?.labelY +
+                  settings.labelSpacing || baseY
+              );
+
+        const horizontalLength = isMobile ? 25 : 35;
+        const horizontalEndX = isRightSide
+          ? seg.bendPoint.x + horizontalLength
+          : seg.bendPoint.x - horizontalLength;
+
+        const labelX = isRightSide ? horizontalEndX + 5 : horizontalEndX - 5;
+
+        const position = {
+          ...seg,
+          labelX,
+          labelY: adjustedY,
+          horizontalEndX,
+          isRightSide,
+        };
+
+        positions.push(position);
+        return position;
+      });
+    };
+
+    // Calculate positions for both sides
+    const leftPositions = calculateSidePositions(leftSide, false);
+    const rightPositions = calculateSidePositions(rightSide, true);
+
+    return [...leftPositions, ...rightPositions];
+  };
+
   const renderCustomLabel = ({
     cx,
     cy,
@@ -53,66 +202,17 @@ export function StatsChart({ data, type }: StatsChartProps) {
     percent,
     index,
   }: any) => {
-    // Only show labels for segments 2% and above
-    if (percent < 0.02) return null;
+    // Only show labels for segments 0.5% and above
+    if (percent < 0.005) return null;
 
     const RADIAN = Math.PI / 180;
-
-    // Reduced threshold - more categories will appear inside the chart
-    const isSmallSegment = percent < 0.04; // Reduced from 0.08 to 0.04 (4% threshold)
+    const isSmallSegment = percent < settings.threshold;
 
     if (isSmallSegment) {
-      // Position for small segments - outside the chart with connecting line
-      const innerRadius2 = outerRadius + 5;
-      const outerRadius2 = outerRadius + 40;
-
-      const innerPoint = {
-        x: cx + innerRadius2 * Math.cos(-midAngle * RADIAN),
-        y: cy + innerRadius2 * Math.sin(-midAngle * RADIAN),
-      };
-
-      const outerPoint = {
-        x: cx + outerRadius2 * Math.cos(-midAngle * RADIAN),
-        y: cy + outerRadius2 * Math.sin(-midAngle * RADIAN),
-      };
-
-      // Adjust label position based on which side of the chart
-      const isRightSide = outerPoint.x > cx;
-      const labelX = isRightSide ? outerPoint.x + 5 : outerPoint.x - 5;
-      const labelY = outerPoint.y;
-
-      // Get category name with emoji preserved
-      const categoryName = chartData[index]?.displayCategory || "";
-
-      return (
-        <g key={`external-label-${index}`}>
-          {/* Connecting line */}
-          <polyline
-            points={`${innerPoint.x},${innerPoint.y} ${outerPoint.x},${outerPoint.y} ${labelX},${labelY}`}
-            stroke="hsl(var(--foreground))"
-            strokeWidth={1.5}
-            fill="none"
-            opacity={0.6}
-          />
-          {/* Label text */}
-          <text
-            x={labelX}
-            y={labelY}
-            fill="hsl(var(--foreground))"
-            textAnchor={isRightSide ? "start" : "end"}
-            dominantBaseline="central"
-            fontSize={11}
-            fontWeight="bold"
-          >
-            <tspan x={labelX} dy="-6">
-              {categoryName}
-            </tspan>
-            <tspan x={labelX} dy="12">{`${(percent * 100).toFixed(0)}%`}</tspan>
-          </text>
-        </g>
-      );
+      // For small segments, we'll handle positioning in a separate pass
+      return null;
     } else {
-      // Position for large segments - inside the chart
+      // Position for large segments (10% and above) - inside the chart
       const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
       const x = cx + radius * Math.cos(-midAngle * RADIAN);
       const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -127,7 +227,7 @@ export function StatsChart({ data, type }: StatsChartProps) {
           fill="white"
           textAnchor={x > cx ? "start" : "end"}
           dominantBaseline="central"
-          fontSize={12}
+          fontSize={settings.fontSize.internal}
           fontWeight="bold"
           style={{ textShadow: "1px 1px 2px rgba(0,0,0,0.8)" }}
         >
@@ -140,21 +240,95 @@ export function StatsChart({ data, type }: StatsChartProps) {
     }
   };
 
+  const ExternalLabels = ({ cx, cy }: { cx: number; cy: number }) => {
+    const RADIAN = Math.PI / 180;
+    const externalPositions = calculateExternalLabelPositions(
+      segmentData,
+      cx,
+      cy
+    );
+
+    return (
+      <g>
+        {externalPositions.map((pos) => {
+          const innerRadius2 = settings.outerRadius + (isMobile ? 3 : 5);
+          const innerPoint = {
+            x: cx + innerRadius2 * Math.cos(-pos.midAngle * RADIAN),
+            y: cy + innerRadius2 * Math.sin(-pos.midAngle * RADIAN),
+          };
+
+          const categoryName = pos.displayCategory || "";
+
+          return (
+            <g key={`external-label-${pos.category}`}>
+              {/* First line segment: from chart to bend point */}
+              <line
+                x1={innerPoint.x}
+                y1={innerPoint.y}
+                x2={pos.bendPoint.x}
+                y2={pos.bendPoint.y}
+                stroke="#666666"
+                strokeWidth={isMobile ? 1.5 : 2}
+                opacity={0.8}
+              />
+
+              {/* Second line segment: from bend point to adjusted label position */}
+              <line
+                x1={pos.bendPoint.x}
+                y1={pos.bendPoint.y}
+                x2={pos.horizontalEndX}
+                y2={pos.labelY}
+                stroke="#666666"
+                strokeWidth={isMobile ? 1.5 : 2}
+                opacity={0.8}
+              />
+
+              {/* Label text */}
+              <text
+                x={pos.labelX}
+                y={pos.labelY}
+                fill="currentColor"
+                textAnchor={pos.isRightSide ? "start" : "end"}
+                dominantBaseline="central"
+                fontSize={settings.fontSize.external}
+                fontWeight="bold"
+                className="fill-foreground cursor-pointer"
+                onClick={() => onCategoryClick?.(pos.category)}
+              >
+                <tspan x={pos.labelX} dy="-6">
+                  {categoryName}
+                </tspan>
+                <tspan x={pos.labelX} dy="12">{`${pos.percentage.toFixed(
+                  0
+                )}%`}</tspan>
+              </text>
+            </g>
+          );
+        })}
+      </g>
+    );
+  };
+
+  const handlePieClick = (data: any) => {
+    onCategoryClick?.(data.category);
+  };
+
   return (
-    <div className="w-full h-96">
+    <div className="w-full h-64 md:h-96 chart-container">
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart margin={{ top: 30, right: 100, bottom: 30, left: 100 }}>
+        <PieChart margin={settings.margin}>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
             label={renderCustomLabel}
-            outerRadius={140}
+            outerRadius={settings.outerRadius}
             fill="#8884d8"
             dataKey="amount"
             stroke="transparent"
             strokeWidth={0}
+            onClick={handlePieClick}
           >
             {chartData.map((entry, index) => (
               <Cell
@@ -162,11 +336,15 @@ export function StatsChart({ data, type }: StatsChartProps) {
                 fill={entry.color}
                 stroke="transparent"
                 strokeWidth={0}
-                style={{ outline: "none" }}
+                style={{ outline: "none", cursor: "pointer" }}
               />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
+          <ExternalLabels
+            cx={containerDimensions.width * 0.5}
+            cy={containerDimensions.height * 0.5}
+          />
         </PieChart>
       </ResponsiveContainer>
 
@@ -176,6 +354,7 @@ export function StatsChart({ data, type }: StatsChartProps) {
           outline: none !important;
           stroke: transparent !important;
           stroke-width: 0 !important;
+          cursor: pointer !important;
         }
         .recharts-pie-sector:focus {
           outline: none !important;

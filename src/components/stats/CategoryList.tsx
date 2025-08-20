@@ -5,6 +5,7 @@ import type { CategoryStats } from "@/lib/actions";
 interface CategoryListProps {
   data: CategoryStats[];
   type: "income" | "expense";
+  onCategoryClick?: (category: string) => void;
 }
 
 // Same color palette as the chart
@@ -21,14 +22,19 @@ const COLORS = [
   "#84cc16", // lime
 ];
 
-export function CategoryList({ data, type }: CategoryListProps) {
+export function CategoryList({
+  data,
+  type,
+  onCategoryClick,
+}: CategoryListProps) {
   return (
     <div className="space-y-3">
       {data.map((item, index) => {
         return (
           <div
             key={item.category}
-            className="flex items-center justify-between"
+            className="flex items-center justify-between cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
+            onClick={() => onCategoryClick?.(item.category)}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* Percentage indicator */}

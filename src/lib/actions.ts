@@ -7,6 +7,18 @@ import type {
   AddTransactionResult,
   TransactionType,
 } from "@/types/transaction";
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  format,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  eachYearOfInterval,
+} from "date-fns";
 
 export async function addTransaction(
   formData: FormData
@@ -261,6 +273,7 @@ export async function getTransactionSummaryByMonth(
     return { totalIncome: 0, totalExpenses: 0, balance: 0 };
   }
 }
+
 //STATS ACTIONS
 
 export interface CategoryStats {
@@ -278,10 +291,16 @@ export interface StatsData {
   dateRange: string;
 }
 
+export interface CategoryDetailData {
+  transactions: Transaction[];
+  chartData: { period: string; amount: number }[];
+}
+
 export async function getStatsData(
   period: "weekly" | "monthly" | "annually",
   month?: number,
-  year?: number
+  year?: number,
+  selectedWeek?: Date
 ): Promise<StatsData> {
   try {
     let startDate: Date;
@@ -291,16 +310,9 @@ export async function getStatsData(
 
     switch (period) {
       case "weekly":
-        // Get current week (Sunday to Saturday)
-        const now = new Date();
-        const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - dayOfWeek);
-        startDate.setHours(0, 0, 0, 0);
-
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
+        const weekDate = selectedWeek || new Date();
+        startDate = startOfWeek(weekDate);
+        endDate = endOfWeek(weekDate);
 
         dateRange = `${startDate.toLocaleDateString("en-US", {
           month: "short",
@@ -414,16 +426,201 @@ export async function getStatsData(
   }
 }
 
+export async function getTransactionsCategory(
+  category: string,
+  type: "income" | "expense",
+  period: "weekly" | "monthly" | "annually",
+  currentDate: Date
+): Promise<CategoryDetailData> {
+  try {
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (period) {
+      case "weekly":
+        startDate = startOfWeek(currentDate);
+        endDate = endOfWeek(currentDate);
+        break;
+      case "monthly":
+        startDate = startOfMonth(currentDate);
+        endDate = endOfMonth(currentDate);
+        break;
+      case "annually":
+        startDate = startOfYear(currentDate);
+        endDate = endOfYear(currentDate);
+        break;
+    }
+
+    // Get transactions for the category
+    const rawTransactions = await prisma.transaction.findMany({
+      where: {
+        category,
+        type,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
+    });
+
+    // Transform transactions to match Transaction interface exactly
+    const transactions: Transaction[] = rawTransactions.map((t) => ({
+      id: t.id,
+      type: t.type as "income" | "expense",
+      amount: Number(t.amount),
+      category: t.category,
+      description: t.description, // Keep as is (string | null)
+      imageUrl: t.imageUrl, // Keep as is (string | null)
+      date: new Date(t.date),
+      createdAt: new Date(t.createdAt),
+      updatedAt: new Date(t.updatedAt),
+    }));
+
+    // Generate chart data based on period
+    let chartData: { period: string; amount: number }[] = [];
+
+    if (period === "monthly") {
+      // Show last 6 months
+      const months = eachMonthOfInterval({
+        start: new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() - 5,
+          1
+        ),
+        end: currentDate,
+      });
+
+      chartData = await Promise.all(
+        months.map(async (month) => {
+          const monthStart = startOfMonth(month);
+          const monthEnd = endOfMonth(month);
+
+          const monthTransactions = await prisma.transaction.findMany({
+            where: {
+              category,
+              type,
+              date: {
+                gte: monthStart,
+                lte: monthEnd,
+              },
+            },
+          });
+
+          return {
+            period: format(month, "MMM"),
+            amount: monthTransactions.reduce(
+              (sum, t) => sum + Number(t.amount),
+              0
+            ),
+          };
+        })
+      );
+    } else if (period === "annually") {
+      // Show last 5 years
+      const years = eachYearOfInterval({
+        start: new Date(currentDate.getFullYear() - 4, 0, 1),
+        end: currentDate,
+      });
+
+      chartData = await Promise.all(
+        years.map(async (year) => {
+          const yearStart = startOfYear(year);
+          const yearEnd = endOfYear(year);
+
+          const yearTransactions = await prisma.transaction.findMany({
+            where: {
+              category,
+              type,
+              date: {
+                gte: yearStart,
+                lte: yearEnd,
+              },
+            },
+          });
+
+          return {
+            period: format(year, "yyyy"),
+            amount: yearTransactions.reduce(
+              (sum, t) => sum + Number(t.amount),
+              0
+            ),
+          };
+        })
+      );
+    } else {
+      // Weekly - show last 7 days
+      const days = eachDayOfInterval({
+        start: new Date(currentDate.getTime() - 6 * 24 * 60 * 60 * 1000),
+        end: currentDate,
+      });
+
+      chartData = await Promise.all(
+        days.map(async (day) => {
+          const dayStart = new Date(
+            day.getFullYear(),
+            day.getMonth(),
+            day.getDate(),
+            0,
+            0,
+            0
+          );
+          const dayEnd = new Date(
+            day.getFullYear(),
+            day.getMonth(),
+            day.getDate(),
+            23,
+            59,
+            59
+          );
+
+          const dayTransactions = await prisma.transaction.findMany({
+            where: {
+              category,
+              type,
+              date: {
+                gte: dayStart,
+                lte: dayEnd,
+              },
+            },
+          });
+
+          return {
+            period: format(day, "EEE"),
+            amount: dayTransactions.reduce(
+              (sum, t) => sum + Number(t.amount),
+              0
+            ),
+          };
+        })
+      );
+    }
+
+    return {
+      transactions,
+      chartData,
+    };
+  } catch (error) {
+    console.error("Error fetching category transactions:", error);
+    return {
+      transactions: [],
+      chartData: [],
+    };
+  }
+}
+
 function groupByCategory(transactions: any[], total: number): CategoryStats[] {
   const categoryMap = new Map<string, { amount: number; count: number }>();
 
   transactions.forEach((transaction) => {
-    // Simply use the category as-is
+    // Use the category exactly as stored in database
     const category = transaction.category;
 
     const existing = categoryMap.get(category) || { amount: 0, count: 0 };
     categoryMap.set(category, {
-      amount: existing.amount + transaction.amount,
+      amount: existing.amount + Number(transaction.amount),
       count: existing.count + 1,
     });
   });

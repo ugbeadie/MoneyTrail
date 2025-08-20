@@ -10,6 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import {
   getStatsData,
   type StatsData,
@@ -17,9 +19,13 @@ import {
 } from "@/lib/actions";
 import { months } from "@/lib/constants";
 import { Spinner } from "@/components/ui/spinner";
-import { StatsChart } from "@/components/stats/TransactionChart";
+import { TransactionChart } from "@/components/stats//TransactionChart";
 import { CategoryList } from "@/components/stats/CategoryList";
+import { CategoryDetail } from "@/components/stats/CategoryDetail";
 import { useStats } from "@/contexts/StatsContext";
+import type { Transaction } from "@/types/transaction";
+import TransactionForm from "@/components/calendar/TransactionForm";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 
 const periodOptions = [
   { value: "weekly", label: "Weekly" },
@@ -36,27 +42,43 @@ export default function StatsPage() {
     dateRange: "",
   });
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Use the global stats context
   const {
     selectedPeriod,
     selectedMonth,
+    selectedYear,
+    selectedWeek,
     activeTab,
     setSelectedPeriod,
-    setSelectedMonth,
     setActiveTab,
+    navigatePeriod,
+    goToToday,
   } = useStats();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const fetchStatsData = async () => {
     setLoading(true);
     try {
       const monthIndex = months.indexOf(selectedMonth);
-      const currentYear = new Date().getFullYear();
 
       const data = await getStatsData(
         selectedPeriod,
         selectedPeriod === "monthly" ? monthIndex : undefined,
-        currentYear
+        selectedYear,
+        selectedPeriod === "weekly" ? selectedWeek : undefined
       );
       setStatsData(data);
     } catch (error) {
@@ -68,9 +90,8 @@ export default function StatsPage() {
 
   useEffect(() => {
     fetchStatsData();
-  }, [selectedPeriod, selectedMonth]);
+  }, [selectedPeriod, selectedMonth, selectedYear, selectedWeek]);
 
-  // Use current tab to determine which data to show
   const currentData =
     activeTab === "income"
       ? statsData.incomeByCategory
@@ -78,103 +99,183 @@ export default function StatsPage() {
   const currentTotal =
     activeTab === "income" ? statsData.totalIncome : statsData.totalExpenses;
 
-  return (
-    <div className="container mx-auto max-w-6xl px-4">
-      <hr className="border-muted" />
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
+  };
 
-      <div className="space-y-6 mt-1">
-        {/* Header with filters */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mt-2">
-          <div>
+  const handleBackFromDetail = () => {
+    setSelectedCategory(null);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const handleTransactionSaved = () => {
+    setEditingTransaction(null);
+    fetchStatsData(); // Refresh data
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTransaction(null);
+  };
+
+  const getCurrentPeriodDisplay = () => {
+    if (selectedPeriod === "weekly") {
+      const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 0 }); // Sunday
+      const weekEnd = endOfWeek(selectedWeek, { weekStartsOn: 0 }); // Saturday
+
+      const startFormatted = format(weekStart, "MMM dd, yyyy");
+      const endFormatted = format(weekEnd, "MMM dd, yyyy");
+
+      return `${startFormatted} - ${endFormatted}`;
+    } else if (selectedPeriod === "monthly") {
+      return `${selectedMonth} ${selectedYear}`;
+    } else {
+      return selectedYear.toString();
+    }
+  };
+
+  // Show transaction form
+  if (editingTransaction) {
+    return (
+      <div
+        className={`${
+          isMobile
+            ? "fixed inset-0 bg-background z-50 overflow-y-auto"
+            : "container mx-auto p-4 max-w-4xl"
+        }`}
+      >
+        <div className="p-4">
+          <TransactionForm
+            editingTransaction={editingTransaction}
+            onTransactionSaved={handleTransactionSaved}
+            onCancelEdit={handleCancelEdit}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Show category detail view
+  if (selectedCategory) {
+    return (
+      <CategoryDetail
+        category={selectedCategory}
+        type={activeTab}
+        period={selectedPeriod}
+        currentMonth={selectedMonth}
+        currentYear={selectedYear}
+        currentWeek={selectedWeek}
+        onBack={handleBackFromDetail}
+        onEditTransaction={handleEditTransaction}
+        onDataChange={fetchStatsData} // Added callback to refresh stats data when transaction is deleted
+        isMobile={isMobile}
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="container mx-auto max-w-6xl">
+        <hr className="border-muted" />
+
+        <div className="space-y-6 mt-2">
+          {/* Header with filters */}
+          <div className="flex flex-col md:flex-row gap-4 items-center md:items-start justify-center md:justify-between">
+            {/* <div>
+            <h1 className="text-2xl font-bold">Stats</h1>
             {statsData.dateRange && (
-              <p className="text-md font-bold text-foreground">
+              <p className="text-sm text-muted-foreground mt-1">
                 {statsData.dateRange}
               </p>
             )}
-          </div>
+          </div> */}
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigatePeriod("prev")}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h2 className="text-lg font-semibold min-w-[120px] text-center">
+                {getCurrentPeriodDisplay()}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigatePeriod("next")}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
 
-          <div className="flex gap-2">
-            <Select
-              value={selectedPeriod}
-              onValueChange={(value: "weekly" | "monthly" | "annually") =>
-                setSelectedPeriod(value)
-              }
-            >
-              <SelectTrigger className="max-w-28 cursor-pointer">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {periodOptions.map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    className="cursor-pointer"
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {selectedPeriod === "monthly" && (
-              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="max-w-24 cursor-pointer">
+            <div className="flex gap-2">
+              <Select
+                value={selectedPeriod}
+                onValueChange={(value: "weekly" | "monthly" | "annually") =>
+                  setSelectedPeriod(value)
+                }
+              >
+                <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem
-                      key={month}
-                      value={month}
-                      className="cursor-pointer"
-                    >
-                      {month}
+                  {periodOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToToday}
+                className="flex items-center gap-2 bg-transparent"
+              >
+                <Calendar className="h-4 w-4" />
+                Today
+              </Button>
+            </div>
           </div>
+
+          {/* Income/Expense Tabs */}
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as "income" | "expense")
+            }
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="income" className="flex items-center gap-2">
+                Income
+                <span className="text-sm font-medium">
+                  ₦{statsData.totalIncome.toLocaleString()}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="expense" className="flex items-center gap-2">
+                Expense
+                <span className="text-sm font-medium">
+                  ₦{statsData.totalExpenses.toLocaleString()}
+                </span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="mt-6">
+              <StatsContent
+                data={currentData}
+                total={currentTotal}
+                loading={loading}
+                type={activeTab}
+                onCategoryClick={handleCategoryClick}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
-
-        {/* Income/Expense Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "income" | "expense")}
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger
-              value="income"
-              className="flex items-center gap-2 cursor-pointer text-green-600"
-            >
-              Income:
-              <span className="text-sm font-bold">
-                ₦{statsData.totalIncome.toLocaleString()}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="expense"
-              className="flex items-center gap-2 cursor-pointer text-red-600"
-            >
-              Expense:
-              <span className="text-sm font-bold">
-                ₦{statsData.totalExpenses.toLocaleString()}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* One shared StatsContent instead of duplicating */}
-          <TabsContent value={activeTab} className="mt-6">
-            <StatsContent
-              data={currentData}
-              total={currentTotal}
-              loading={loading}
-              type={activeTab}
-            />
-          </TabsContent>
-        </Tabs>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -183,9 +284,16 @@ interface StatsContentProps {
   total: number;
   loading: boolean;
   type: "income" | "expense";
+  onCategoryClick: (category: string) => void;
 }
 
-function StatsContent({ data, total, loading, type }: StatsContentProps) {
+function StatsContent({
+  data,
+  total,
+  loading,
+  type,
+  onCategoryClick,
+}: StatsContentProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -207,22 +315,20 @@ function StatsContent({ data, total, loading, type }: StatsContentProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Chart */}
-      <Card className="border-none shadow-none">
-        <CardHeader className="px-0">
-          {type === "income" ? (
-            <h3 className="text-lg font-semibold capitalize text-green-600">
-              {type} by Category
-            </h3>
-          ) : (
-            <h3 className="text-lg font-semibold capitalize text-red-600">
-              {type} by Category
-            </h3>
-          )}
+      <Card>
+        <CardHeader>
+          <h3 className="text-lg font-semibold capitalize">
+            {type} by Category
+          </h3>
         </CardHeader>
-        <CardContent className="px-0 ">
-          <StatsChart data={data} type={type} />
+        <CardContent>
+          <TransactionChart
+            data={data}
+            type={type}
+            onCategoryClick={onCategoryClick}
+          />
         </CardContent>
       </Card>
 
@@ -232,7 +338,11 @@ function StatsContent({ data, total, loading, type }: StatsContentProps) {
           <h3 className="text-lg font-semibold">Category Breakdown</h3>
         </CardHeader>
         <CardContent>
-          <CategoryList data={data} type={type} />
+          <CategoryList
+            data={data}
+            type={type}
+            onCategoryClick={onCategoryClick}
+          />
         </CardContent>
       </Card>
     </div>

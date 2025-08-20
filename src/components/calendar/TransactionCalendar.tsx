@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "lucide-react";
+
 import { Spinner } from "@/components/ui/spinner";
 import type { Transaction } from "@/types/transaction";
 import { getTransactionsByMonth } from "@/lib/actions";
@@ -177,6 +179,7 @@ export default function TransactionCalendar({
               className="max-w-22 cursor-pointer"
               onClick={handleTodayClick}
             >
+              <Calendar className="h-4 w-4" />
               Today
             </Button>
           </div>
