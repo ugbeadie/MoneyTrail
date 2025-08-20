@@ -140,7 +140,7 @@ export default function TransactionCalendar({
   }, []);
 
   return (
-    <Card className="h-full flex flex-col mb-8 border-0 shadow-none bg-transparent py-2 ">
+    <Card className="h-full flex flex-col mb-10 md:mb-8 border-0 shadow-none bg-transparent py-2 ">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-center justify-center md:justify-end">
           <div className="flex items-center gap-2">

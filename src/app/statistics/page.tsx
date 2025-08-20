@@ -177,24 +177,17 @@ export default function StatsPage() {
 
   return (
     <>
-      <div className="container mx-auto max-w-6xl">
+      <div className="container mx-auto max-w-6xl px-4 mb-12 md:mb-6">
         <hr className="border-muted" />
 
         <div className="space-y-6 mt-2">
           {/* Header with filters */}
           <div className="flex flex-col md:flex-row gap-4 items-center md:items-start justify-center md:justify-between">
-            {/* <div>
-            <h1 className="text-2xl font-bold">Stats</h1>
-            {statsData.dateRange && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {statsData.dateRange}
-              </p>
-            )}
-          </div> */}
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-4 ">
               <Button
                 variant="ghost"
                 size="sm"
+                className="cursor-pointer"
                 onClick={() => navigatePeriod("prev")}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -205,25 +198,30 @@ export default function StatsPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                className="cursor-pointer"
                 onClick={() => navigatePeriod("next")}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 ">
               <Select
                 value={selectedPeriod}
                 onValueChange={(value: "weekly" | "monthly" | "annually") =>
                   setSelectedPeriod(value)
                 }
               >
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 cursor-pointer">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {periodOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="cursor-pointer"
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
@@ -233,7 +231,7 @@ export default function StatsPage() {
                 variant="outline"
                 size="sm"
                 onClick={goToToday}
-                className="flex items-center gap-2 bg-transparent"
+                className="flex items-center gap-2 bg-transparent cursor-pointer"
               >
                 <Calendar className="h-4 w-4" />
                 Today
@@ -249,13 +247,19 @@ export default function StatsPage() {
             }
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="income" className="flex items-center gap-2">
+              <TabsTrigger
+                value="income"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 Income
                 <span className="text-sm font-medium">
                   ₦{statsData.totalIncome.toLocaleString()}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="expense" className="flex items-center gap-2">
+              <TabsTrigger
+                value="expense"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 Expense
                 <span className="text-sm font-medium">
                   ₦{statsData.totalExpenses.toLocaleString()}
@@ -319,7 +323,11 @@ function StatsContent({
       {/* Chart */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold capitalize">
+          <h3
+            className={`text-lg font-semibold capitalize ${
+              type === "income" ? "text-green-600" : "text-red-600"
+            }`}
+          >
             {type} by Category
           </h3>
         </CardHeader>

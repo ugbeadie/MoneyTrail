@@ -208,14 +208,19 @@ export function CategoryDetail({
         isMobile ? "fixed inset-0 bg-background z-50 overflow-y-auto" : "w-full"
       }`}
     >
-      <div className=" space-y-4 mx-auto max-w-6xl">
+      <div className=" space-y-4 mx-auto max-w-6xl px-4">
         <hr className="border-muted" />
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="cursor-pointer"
+              onClick={onBack}
+            >
+              <ArrowLeft className="h-4 w-4 " />
               Back
             </Button>
             <h1 className="text-xl font-bold">{category}</h1>
@@ -227,6 +232,7 @@ export function CategoryDetail({
           <Button
             variant="ghost"
             size="sm"
+            className="cursor-pointer"
             onClick={() => navigateDate("prev")}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -237,6 +243,7 @@ export function CategoryDetail({
           <Button
             variant="ghost"
             size="sm"
+            className="cursor-pointer"
             onClick={() => navigateDate("next")}
           >
             <ChevronRight className="h-4 w-4" />
