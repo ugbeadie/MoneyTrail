@@ -342,10 +342,10 @@ function StatsContent({
 
       {/* Category List */}
       <Card>
-        <CardHeader>
+        <CardHeader className="px-2 md:px-6">
           <h3 className="text-lg font-semibold">Category Breakdown</h3>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 md:px-6">
           <CategoryList
             data={data}
             type={type}
