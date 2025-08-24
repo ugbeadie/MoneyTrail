@@ -68,26 +68,27 @@ export function CategoryDetail({
     );
   });
 
-  const fetchCategoryData = async () => {
-    setLoading(true);
-    try {
-      const data = await getTransactionsCategory(
-        category,
-        type,
-        period,
-        currentDate
-      );
-      setTransactions(data.transactions);
-      setChartData(data.chartData);
-    } catch (error) {
-      console.error("Failed to fetch category data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch category data when inputs change
   useEffect(() => {
-    fetchCategoryData();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const data = await getTransactionsCategory(
+          category,
+          type,
+          period,
+          currentDate
+        );
+        setTransactions(data.transactions);
+        setChartData(data.chartData);
+      } catch (error) {
+        console.error("Failed to fetch category data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [category, type, period, currentDate]);
 
   const navigateDate = (direction: "prev" | "next") => {
@@ -115,10 +116,17 @@ export function CategoryDetail({
     try {
       const result = await deleteTransaction(id);
       if (result.success) {
-        await fetchCategoryData();
-        if (onDataChange) {
-          onDataChange();
-        }
+        // Re-fetch after delete
+        const data = await getTransactionsCategory(
+          category,
+          type,
+          period,
+          currentDate
+        );
+        setTransactions(data.transactions);
+        setChartData(data.chartData);
+
+        onDataChange?.();
       } else {
         console.error("Failed to delete transaction:", result.error);
       }
@@ -139,10 +147,17 @@ export function CategoryDetail({
   const handleFormSave = async () => {
     setShowForm(false);
     setEditingTransaction(null);
-    await fetchCategoryData();
-    if (onDataChange) {
-      onDataChange();
-    }
+
+    const data = await getTransactionsCategory(
+      category,
+      type,
+      period,
+      currentDate
+    );
+    setTransactions(data.transactions);
+    setChartData(data.chartData);
+
+    onDataChange?.();
   };
 
   const handleFormCancel = () => {
@@ -162,15 +177,14 @@ export function CategoryDetail({
       return format(currentDate, "MMM yyyy");
     } else if (period === "annually") {
       return format(currentDate, "yyyy");
-    } else {
-      return "This Week";
     }
+    return "This Week";
   };
 
-  const groupTransactionsByDate = (transactions: Transaction[]) => {
+  const groupTransactionsByDate = (txns: Transaction[]) => {
     const grouped: Record<string, Transaction[]> = {};
 
-    transactions.forEach((transaction) => {
+    txns.forEach((transaction) => {
       const date = transaction.date.toISOString().split("T")[0];
       if (!grouped[date]) {
         grouped[date] = [];
@@ -213,7 +227,7 @@ export function CategoryDetail({
         isMobile ? "fixed inset-0 bg-background z-50 overflow-y-auto" : "w-full"
       }`}
     >
-      <div className=" space-y-4 mx-auto max-w-6xl px-4">
+      <div className="space-y-4 mx-auto max-w-6xl px-4">
         <hr className="border-muted" />
 
         {/* Header */}
@@ -232,7 +246,7 @@ export function CategoryDetail({
           </div>
         </div>
 
-        {/* Date Navigation - now shows for all periods including weekly */}
+        {/* Date Navigation */}
         <div className="flex items-center justify-center gap-4">
           <Button
             variant="ghost"
@@ -288,7 +302,7 @@ export function CategoryDetail({
             </CardContent>
           </Card>
 
-          {/* Transaction List / Form Container */}
+          {/* Transaction List / Form */}
           <Card className="w-full max-h-[70vh] overflow-auto relative">
             {!showForm || isMobile ? (
               <>

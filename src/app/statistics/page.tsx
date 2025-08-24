@@ -69,7 +69,7 @@ export default function StatsPage() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // ✅ useCallback to fix missing dependency warning
+  // useCallback to fix missing dependency warning
   const fetchStatsData = useCallback(async () => {
     setLoading(true);
     try {
@@ -332,11 +332,7 @@ function StatsContent({
           </h3>
         </CardHeader>
         <CardContent className="px-0">
-          <TransactionChart
-            data={data}
-            type={type}
-            onCategoryClick={onCategoryClick}
-          />
+          <TransactionChart data={data} onCategoryClick={onCategoryClick} />
         </CardContent>
       </Card>
 
@@ -346,11 +342,7 @@ function StatsContent({
           <h3 className="text-lg font-semibold">Category Breakdown</h3>
         </CardHeader>
         <CardContent className="px-2 md:px-6">
-          <CategoryList
-            data={data}
-            type={type}
-            onCategoryClick={onCategoryClick}
-          />
+          <CategoryList data={data} onCategoryClick={onCategoryClick} />
         </CardContent>
       </Card>
     </div>

@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 
 interface StatsChartProps {
   data: CategoryStats[];
-  type: "income" | "expense";
   onCategoryClick?: (category: string) => void;
 }
 
@@ -24,11 +23,7 @@ const COLORS = [
   "#84cc16", // lime
 ];
 
-export function TransactionChart({
-  data,
-  type,
-  onCategoryClick,
-}: StatsChartProps) {
+export function TransactionChart({ data, onCategoryClick }: StatsChartProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({
     width: 0,
