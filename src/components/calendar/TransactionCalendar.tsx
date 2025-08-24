@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -111,7 +111,7 @@ export default function TransactionCalendar({
     setSelectedYear(today.getFullYear());
   };
 
-  const handleDayClick = (info: any) => {
+  const handleDayClick = (info: DateClickArg) => {
     const dateStr = formatDateForKey(new Date(info.date));
     onDaySelected(dateStr, dayData[dateStr] || null);
   };

@@ -168,7 +168,7 @@ export function TransactionForm({
       showSuccessToast(isEditing);
       !isEditing && resetFormState();
       onTransactionSaved?.(); // This calls handleTransactionSaved which uses handleRefresh
-    } catch (err) {
+    } catch (_error) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);

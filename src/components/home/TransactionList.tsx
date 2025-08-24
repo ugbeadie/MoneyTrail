@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Trash2 } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
 import { getTransactionsByMonth, deleteTransaction } from "@/lib/actions";
 import { Spinner } from "../ui/spinner";
 import { toast } from "sonner";
 import { useMonth } from "@/contexts/MonthContext";
-import { TransactionGroup } from "./TransactionGroup"; // Import the extracted component
+import { TransactionGroup } from "./TransactionGroup";
 
 interface TransactionListProps {
   onEdit: (transaction: Transaction) => void;
@@ -19,7 +19,7 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
   const [loading, setLoading] = useState(true);
   const { selectedMonthIndex, selectedMonth } = useMonth();
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
       const currentYear = new Date().getFullYear();
@@ -28,19 +28,18 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
         currentYear
       );
       setTransactions(data);
-    } catch (error) {
-      console.error("Failed to fetch transactions:", error);
+    } catch (_error) {
       toast.error("Failed to load transactions", {
         description: "Please try again later.",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMonthIndex]);
 
   useEffect(() => {
     fetchTransactions();
-  }, [selectedMonthIndex]); // Re-fetch when month changes
+  }, [fetchTransactions]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -51,11 +50,11 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
           icon: <Trash2 className="text-red-600" size={18} />,
           description: "The transaction has been removed successfully.",
         });
-        onRefresh(); // Refresh parent component (CalendarPage)
+        onRefresh(); // refresh parent component
       } else {
         toast.error(result.error || "Failed to delete transaction");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while deleting the transaction");
     }
   };
@@ -81,13 +80,11 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
     );
   }
 
-  // Group and sort transactions
+  // Group transactions
   const groupedTransactions = transactions.reduce(
     (groups: Record<string, Transaction[]>, transaction) => {
       const date = transaction.date.toISOString().split("T")[0];
-      if (!groups[date]) {
-        groups[date] = [];
-      }
+      if (!groups[date]) groups[date] = [];
       groups[date].push(transaction);
       return groups;
     },

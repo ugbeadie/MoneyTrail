@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Select,
@@ -19,7 +19,7 @@ import {
 } from "@/lib/actions";
 import { months } from "@/lib/constants";
 import { Spinner } from "@/components/ui/spinner";
-import { TransactionChart } from "@/components/stats//TransactionChart";
+import { TransactionChart } from "@/components/stats/TransactionChart";
 import { CategoryList } from "@/components/stats/CategoryList";
 import { CategoryDetail } from "@/components/stats/CategoryDetail";
 import { useStats } from "@/contexts/StatsContext";
@@ -69,7 +69,8 @@ export default function StatsPage() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const fetchStatsData = async () => {
+  // ✅ useCallback to fix missing dependency warning
+  const fetchStatsData = useCallback(async () => {
     setLoading(true);
     try {
       const monthIndex = months.indexOf(selectedMonth);
@@ -86,11 +87,11 @@ export default function StatsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPeriod, selectedMonth, selectedYear, selectedWeek]);
 
   useEffect(() => {
     fetchStatsData();
-  }, [selectedPeriod, selectedMonth, selectedYear, selectedWeek]);
+  }, [fetchStatsData]);
 
   const currentData =
     activeTab === "income"
@@ -169,7 +170,7 @@ export default function StatsPage() {
         currentWeek={selectedWeek}
         onBack={handleBackFromDetail}
         onEditTransaction={handleEditTransaction}
-        onDataChange={fetchStatsData} // Added callback to refresh stats data when transaction is deleted
+        onDataChange={fetchStatsData} // Refresh stats data when transaction is deleted
         isMobile={isMobile}
       />
     );
@@ -293,7 +294,6 @@ interface StatsContentProps {
 
 function StatsContent({
   data,
-  total,
   loading,
   type,
   onCategoryClick,

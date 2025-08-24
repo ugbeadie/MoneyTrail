@@ -33,6 +33,11 @@ interface CategoryDetailProps {
   isMobile?: boolean;
 }
 
+interface ChartDataProps {
+  period: string;
+  amount: number;
+}
+
 export function CategoryDetail({
   category,
   type,
@@ -47,7 +52,7 @@ export function CategoryDetail({
 }: CategoryDetailProps) {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<ChartDataProps[]>([]);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -264,7 +269,7 @@ export function CategoryDetail({
                     <XAxis dataKey="period" />
                     <YAxis />
                     <Tooltip
-                      formatter={(value: any) => [
+                      formatter={(value: number) => [
                         `₦${value.toLocaleString()}`,
                         "Amount",
                       ]}

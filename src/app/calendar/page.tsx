@@ -88,7 +88,7 @@ export default function CalendarPage() {
       } else {
         toast.error(result?.error || "Failed to delete transaction");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("An error occurred while deleting the transaction");
     }
   };

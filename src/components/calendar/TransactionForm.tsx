@@ -35,16 +35,15 @@ export default function TransactionForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const isEditing = !!editingTransaction;
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize(); // run once on mount
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  // useEffect(() => {
+  //   const handleResize = () => setIsMobile(window.innerWidth < 768);
+  //   handleResize(); // run once on mount
+  //   window.addEventListener("resize", handleResize);
+  //   return () => window.removeEventListener("resize", handleResize);
+  // }, []);
 
   //convert the date to a local date string formatted as YYYY-MM-DD
   function getLocalDateISO(): string {
@@ -168,7 +167,7 @@ export default function TransactionForm({
       showSuccessToast(isEditing);
       !isEditing && resetFormState();
       onTransactionSaved?.(); // This calls handleTransactionSaved which uses handleRefresh
-    } catch (err) {
+    } catch (_error) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);

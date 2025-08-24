@@ -5,13 +5,9 @@ import { Plus } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
 import { SummaryCards } from "../shared/SummaryCard";
 import { TransactionForm } from "./TransactionForm";
-
 import { TransactionList } from "./TransactionList";
-// import { handleRefresh } from "@/utils/transaction-utils" // Declare or import handleRefresh
 
-type TransactionManagerProps = {};
-
-export default function TransactionManager({}: TransactionManagerProps) {
+export default function TransactionManager() {
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
   const [showMobileForm, setShowMobileForm] = useState(false);
@@ -23,6 +19,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
   const handleRefresh = () => {
     refresh();
   };
+
   // Handle editing a transaction
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -50,9 +47,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
 
   // Prevent body scroll when mobile form is open - ONLY on mobile
   useEffect(() => {
-    // Only prevent scroll on mobile when form is open
     const isMobile = window.innerWidth < 768; // md breakpoint
-
     if (showMobileForm && isMobile) {
       document.body.style.overflow = "hidden";
     } else {
@@ -63,6 +58,7 @@ export default function TransactionManager({}: TransactionManagerProps) {
   return (
     <div className="relative">
       <SummaryCards key={`summary-${refreshKey}`} />
+
       {/* Desktop Layout */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-6 md:h-[60vh]">
         {/* Transaction List */}
@@ -107,7 +103,6 @@ export default function TransactionManager({}: TransactionManagerProps) {
         {/* Mobile Form Overlay */}
         {showMobileForm && (
           <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
-            {/* Form Content */}
             <div className="p-4">
               <TransactionForm
                 editingTransaction={editingTransaction}
