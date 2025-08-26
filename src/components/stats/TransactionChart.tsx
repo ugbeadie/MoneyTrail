@@ -96,7 +96,18 @@ export function TransactionChart({ data, onCategoryClick }: StatsChartProps) {
 
   const settings = isMobile ? chartSettings.mobile : chartSettings.desktop;
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipProps {
+    active?: boolean;
+    payload?: {
+      payload: {
+        displayCategory: string;
+        amount: number;
+        percentage: number;
+      };
+    }[];
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

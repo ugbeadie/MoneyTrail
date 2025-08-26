@@ -377,7 +377,7 @@ export async function getStatsData(
       )
     );
 
-    const transactions = await prisma.transaction.findMany({
+    const rawTransactions = await prisma.transaction.findMany({
       where: {
         date: {
           gte: utcStartDate,
@@ -385,6 +385,19 @@ export async function getStatsData(
         },
       },
     });
+
+    // Transform raw transactions to match Transaction interface
+    const transactions: Transaction[] = rawTransactions.map((t) => ({
+      id: t.id,
+      type: t.type as TransactionType,
+      amount: Number(t.amount), // Convert Decimal to number
+      category: t.category,
+      description: t.description,
+      imageUrl: t.imageUrl,
+      date: new Date(t.date),
+      createdAt: new Date(t.createdAt),
+      updatedAt: new Date(t.updatedAt),
+    }));
 
     const incomeTransactions = transactions.filter((t) => t.type === "income");
     const expenseTransactions = transactions.filter(
@@ -611,7 +624,10 @@ export async function getTransactionsCategory(
   }
 }
 
-function groupByCategory(transactions: any[], total: number): CategoryStats[] {
+function groupByCategory(
+  transactions: Transaction[],
+  total: number
+): CategoryStats[] {
   const categoryMap = new Map<string, { amount: number; count: number }>();
 
   transactions.forEach((transaction) => {
