@@ -28,7 +28,8 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
         currentYear
       );
       setTransactions(data);
-    } catch (_error) {
+    } catch (error) {
+      console.error("Failed to load transactions:", error);
       toast.error("Failed to load transactions", {
         description: "Please try again later.",
       });
@@ -54,7 +55,8 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
       } else {
         toast.error(result.error || "Failed to delete transaction");
       }
-    } catch {
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
       toast.error("An error occurred while deleting the transaction");
     }
   };

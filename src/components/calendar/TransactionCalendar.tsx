@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin, { DateClickArg } from "@fullcalendar/interaction";
+import interactionPlugin, {
+  type DateClickArg,
+} from "@fullcalendar/interaction";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -62,9 +64,11 @@ const processTransactions = (
     }
 
     grouped[dateStr].transactions.push(transaction);
-    transaction.type === "income"
-      ? (grouped[dateStr].income += transaction.amount)
-      : (grouped[dateStr].expense += transaction.amount);
+    if (transaction.type === "income") {
+      grouped[dateStr].income += transaction.amount;
+    } else {
+      grouped[dateStr].expense += transaction.amount;
+    }
 
     grouped[dateStr].balance =
       grouped[dateStr].income - grouped[dateStr].expense;
@@ -76,6 +80,7 @@ const processTransactions = (
 // Generate year options (current year ± 5 years)
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
+
 export default function TransactionCalendar({
   onDaySelected,
 }: TransactionCalendarProps) {
@@ -176,7 +181,7 @@ export default function TransactionCalendar({
             <Button
               variant="outline"
               size="sm"
-              className="max-w-22 cursor-pointer"
+              className="max-w-22 cursor-pointer bg-transparent"
               onClick={handleTodayClick}
             >
               <Calendar className="h-4 w-4" />

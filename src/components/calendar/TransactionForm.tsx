@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import type React from "react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { addTransaction, updateTransaction } from "@/lib/actions";
-import { PlusCircle, MinusCircle, FilePenLine, X } from "lucide-react"; // Added X for close button
+import { PlusCircle, MinusCircle, FilePenLine, X } from "lucide-react";
 import type { TransactionType, Transaction } from "@/types/transaction";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -37,13 +37,6 @@ export default function TransactionForm({
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const isEditing = !!editingTransaction;
-
-  // useEffect(() => {
-  //   const handleResize = () => setIsMobile(window.innerWidth < 768);
-  //   handleResize(); // run once on mount
-  //   window.addEventListener("resize", handleResize);
-  //   return () => window.removeEventListener("resize", handleResize);
-  // }, []);
 
   //convert the date to a local date string formatted as YYYY-MM-DD
   function getLocalDateISO(): string {
@@ -147,9 +140,9 @@ export default function TransactionForm({
 
     try {
       // Add ID for editing
-      isEditing &&
-        editingTransaction &&
+      if (isEditing && editingTransaction) {
         formData.set("id", editingTransaction.id);
+      }
 
       const result =
         isEditing && editingTransaction
@@ -165,9 +158,12 @@ export default function TransactionForm({
       }
 
       showSuccessToast(isEditing);
-      !isEditing && resetFormState();
+      if (!isEditing) {
+        resetFormState();
+      }
       onTransactionSaved?.(); // This calls handleTransactionSaved which uses handleRefresh
-    } catch (_error) {
+    } catch (error) {
+      console.error("Error submitting transaction:", error);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);

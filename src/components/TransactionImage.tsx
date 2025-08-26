@@ -1,6 +1,9 @@
 "use client";
 
+import type React from "react";
+
 import { useCallback } from "react";
+import Image from "next/image"; // Import Next.js Image component
 
 interface TransactionImageProps {
   imageUrl: string;
@@ -24,9 +27,11 @@ export function TransactionImage({
   );
 
   return (
-    <img
-      src={imageUrl || "/placeholder.svg"}
+    <Image
+      src={imageUrl || "/placeholder.svg?height=80&width=80"}
       alt={alt}
+      width={80}
+      height={80}
       className="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
       onClick={handleImageClick}
       onError={handleImageError}
