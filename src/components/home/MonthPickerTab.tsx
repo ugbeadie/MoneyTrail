@@ -1,10 +1,9 @@
 "use client";
-
 import { MonthPicker } from "./MonthPicker";
-import { useMonth } from "@/contexts/MonthContext";
+import { useCalendar } from "@/contexts/CalendarContext";
 
 export function MonthPickerTab() {
-  const { selectedMonth, setSelectedMonth } = useMonth();
+  const { selectedMonth, setSelectedMonth } = useCalendar();
 
   return (
     <div className="flex justify-between items-center mt-2 mb-2">

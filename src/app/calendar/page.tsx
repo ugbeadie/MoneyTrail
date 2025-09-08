@@ -11,8 +11,10 @@ import type { DayData } from "@/components/calendar/TransactionCalendar";
 import { DayPanel } from "@/components/calendar/DayPanel";
 import { deleteTransaction } from "@/lib/actions";
 import { toast } from "sonner";
+import { CalendarProvider, useCalendar } from "@/contexts/CalendarContext";
 
-export default function CalendarPage() {
+function CalendarContent() {
+  const { selectedMonthIndex, selectedYear } = useCalendar();
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -60,7 +62,6 @@ export default function CalendarPage() {
     try {
       const result = await deleteTransaction(id);
       if (result?.success) {
-        // Update panel data optimistically
         setSelectedDayDataForPanel((prev) => {
           if (!prev) return prev;
 
@@ -107,7 +108,9 @@ export default function CalendarPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6">
       <hr className="border-muted" />
       <h1 className="font-bold text-2xl mt-1">Summary</h1>
-      <SummaryCards key={`summary-${refreshKey}`} />
+      <SummaryCards
+        key={`summary-${refreshKey}-${selectedMonthIndex}-${selectedYear}`}
+      />
 
       {/* Desktop Layout */}
       <div className="hidden md:flex gap-4 mt-4 h-[calc(100vh-200px)]">
@@ -192,5 +195,13 @@ export default function CalendarPage() {
         </Button>
       )}
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <CalendarProvider>
+      <CalendarContent />
+    </CalendarProvider>
   );
 }

@@ -65,7 +65,6 @@ function SummaryCard({
 }
 
 export function SummaryCards() {
-  // Use the calendar context instead of month context
   const { selectedMonthIndex, selectedYear } = useCalendar();
   const [summary, setSummary] = useState<TransactionSummary>({
     totalIncome: 0,
@@ -78,7 +77,7 @@ export function SummaryCards() {
     const fetchSummary = async () => {
       setLoading(true);
       try {
-        // Use the selected year from calendar context instead of hardcoded current year
+        // Use the selected year from calendar context
         const data = await getTransactionSummaryByMonth(
           selectedMonthIndex,
           selectedYear
@@ -91,7 +90,7 @@ export function SummaryCards() {
       }
     };
     fetchSummary();
-  }, [selectedMonthIndex, selectedYear]); // Add selectedYear as dependency
+  }, [selectedMonthIndex, selectedYear]);
 
   return (
     <div className="w-full">

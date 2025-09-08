@@ -6,7 +6,7 @@ import type { Transaction } from "@/types/transaction";
 import { getTransactionsByMonth, deleteTransaction } from "@/lib/actions";
 import { Spinner } from "../ui/spinner";
 import { toast } from "sonner";
-import { useMonth } from "@/contexts/MonthContext";
+import { useCalendar } from "@/contexts/CalendarContext";
 import { TransactionGroup } from "./TransactionGroup";
 
 interface TransactionListProps {
@@ -17,7 +17,7 @@ interface TransactionListProps {
 export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const { selectedMonthIndex, selectedMonth } = useMonth();
+  const { selectedMonthIndex, selectedMonth } = useCalendar();
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);

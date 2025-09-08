@@ -1,6 +1,8 @@
+export type TransactionType = "income" | "expense";
+
 export interface Transaction {
   id: string;
-  type: "income" | "expense";
+  type: TransactionType;
   amount: number;
   category: string;
   description: string | null;
@@ -16,13 +18,7 @@ export interface TransactionSummary {
   balance: number;
 }
 
-export type TransactionType = "income" | "expense";
-
 export interface AddTransactionResult {
   success: boolean;
   error?: string;
 }
-
-// export function isValidTransactionType(type: string): type is TransactionType {
-//   return type === "income" || type === "expense";
-// }

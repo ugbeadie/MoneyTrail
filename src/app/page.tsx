@@ -1,10 +1,10 @@
 import { MonthPickerTab } from "@/components/home/MonthPickerTab";
 import TransactionManager from "@/components/home/TransactionManager";
-import { MonthProvider } from "@/contexts/MonthContext";
+import { CalendarProvider } from "@/contexts/CalendarContext";
 
 export default function HomePage() {
   return (
-    <MonthProvider>
+    <CalendarProvider>
       <div className="max-h-screen bg-background flex flex-col">
         <main className="max-w-6xl mx-auto px-4 sm:px-6 flex-1 w-full flex flex-col">
           <hr className="border-muted" />
@@ -14,6 +14,6 @@ export default function HomePage() {
           </div>
         </main>
       </div>
-    </MonthProvider>
+    </CalendarProvider>
   );
 }

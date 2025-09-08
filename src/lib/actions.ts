@@ -1,5 +1,5 @@
 "use server";
-import { prisma } from "./prisma";
+import prisma from "./prisma";
 import { revalidatePath } from "next/cache";
 import type {
   Transaction,
