@@ -71,9 +71,9 @@ export function TransactionList({ onEdit, onRefresh }: TransactionListProps) {
 
   if (transactions.length === 0) {
     return (
-      <div className="h-[600px] flex flex-col">
+      <div className="flex flex-col">
         <h2 className="text-xl font-semibold mb-2">Recent Transactions</h2>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center">
           <p className="text-muted-foreground text-sm text-center">
             No transactions for {selectedMonth}. Add your first transaction!
           </p>
